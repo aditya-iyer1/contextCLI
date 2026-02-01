@@ -1,0 +1,8 @@
+docs/prompts.md
+docs/research.md
+docs/architecture.md
+docs/critique.md
+docs/prd.md
+docs/specifications.md
+
+*.venv/

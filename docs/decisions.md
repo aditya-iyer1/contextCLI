@@ -1,0 +1,1 @@
+* Every time I pick an approach, 2-5 bullets: Decision, why, tradeoff
