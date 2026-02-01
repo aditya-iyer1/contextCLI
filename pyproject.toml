@@ -3,7 +3,7 @@ requires = ["uv_build >= 0.9.26, <0.10.0"]
 build-backend = "uv_build"
 
 [project]
-name = "contextCLIff"
+name = "contextcliff"
 version = "0.1.0"
 description = "A CLI tool to profile effective LLM reasoning limits using Natural Length Distribution Analysis."
 dependencies = [
@@ -21,6 +21,11 @@ dependencies = [
 requires-python = ">= 3.8"
 readme = "README.md"
 
+[tool.uv.sources]
+contextcliff = { workspace = true }
+
+[tool.uv]
+package = true
+
 [project.scripts]
-# This maps the terminal command 'contextcliff' to the main function in your code
 contextcliff = "contextcliff.cli.main:main"
