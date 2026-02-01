@@ -6,3 +6,5 @@ docs/prd.md
 docs/specifications.md
 
 *.venv/
+uv.lock
+src/

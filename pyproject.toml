@@ -18,6 +18,8 @@ dependencies = [
     "openai",       # API client
     "rich",         # Pretty terminal output (optional but recommended)
 ]
+requires-python = ">= 3.8"
+readme = "README.md"
 
 [project.scripts]
 # This maps the terminal command 'contextcliff' to the main function in your code

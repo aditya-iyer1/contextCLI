@@ -6,3 +6,4 @@
 
 * Created basic files for data from scaffolding
 * Wrote boilerplate in `data/formats.py` to ensure data layer and metric layer are in the same formatting
+* Wrote basic cli interface in `cli/main.py` to set up basic CLI interactions
