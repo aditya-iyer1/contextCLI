@@ -1,0 +1,24 @@
+[build-system]
+requires = ["uv_build >= 0.9.26, <0.10.0"]
+build-backend = "uv_build"
+
+[project]
+name = "contextCLIff"
+version = "0.1.0"
+description = "A CLI tool to profile effective LLM reasoning limits using Natural Length Distribution Analysis."
+dependencies = [
+    "click",        # Standard for CLI creation
+    "datasets",     # HuggingFace datasets for NarrativeQA
+    "tiktoken",     # Fast tokenization (OpenAI/Industry standard)
+    "numpy",        # Quantile binning and stats
+    "pandas",       # Data manipulation for reporting
+    "matplotlib",   # Plotting the "Cliff"
+    "seaborn",      # Statistical visualization
+    "pydantic",     # Data validation/Configuration
+    "openai",       # API client
+    "rich",         # Pretty terminal output (optional but recommended)
+]
+
+[project.scripts]
+# This maps the terminal command 'contextcliff' to the main function in your code
+contextcliff = "contextcliff.cli.main:main"
