@@ -29,55 +29,55 @@
     pyproject.toml
     README.md
 
-    contextcliff/
-        __init__.py
+        src/
+            __init__.py
 
-        cli/
-            main.py                 # entrypoint: contextcliff ...
-            run_eval.py             # run model on dataset → outputs
-            profile.py              # bin + analyze → profile
-            report.py               # generate plots + markdown/json
+            cli/
+                main.py                 # entrypoint: contextcliff ...
+                run_eval.py             # run model on dataset → outputs
+                profile.py              # bin + analyze → profile
+                report.py               # generate plots + markdown/json
 
-        config/
-            schema.py               # pydantic configs (model/dataset/run) (RunConfig, ModelConfig, DatasetConfig, PromptConfig)
-            defaults.yaml
-            manifest.json           # Run manigest to capture data to make results defensible
+            config/
+                schema.py               # pydantic configs (model/dataset/run) (RunConfig, ModelConfig, DatasetConfig, PromptConfig)
+                defaults.yaml
+                manifest.json           # Run manigest to capture data to make results defensible
 
-        data/
-        adapters/
-            narrativeqa.py        # dataset loader → Example objects
-        formats.py              # Example, Prediction, EvalRecord dataclasses
-        tokenization.py         # token counting abstraction
+            data/
+            adapters/
+                narrativeqa.py        # dataset loader → Example objects
+            formats.py              # Example, Prediction, EvalRecord dataclasses
+            tokenization.py         # token counting abstraction
 
-        prompting/
-            templates.py            # prompt templates
-            render.py               # render(example, template) → prompt string
+            prompting/
+                templates.py            # prompt templates
+                render.py               # render(example, template) → prompt string
 
-        models/
-            base.py                 # ModelClient interface
-            openai_api.py           # concrete client (or others)
-            caching.py              # optional response cache
+            models/
+                base.py                 # ModelClient interface
+                openai_api.py           # concrete client (or others)
+                caching.py              # optional response cache
 
-        eval/
-            metrics.py              # EM, F1
-            normalize.py            # answer normalization
-            parse.py                # parse model output → answer string
-            failures.py             # failure types & counters
+            eval/
+                metrics.py              # EM, F1
+                normalize.py            # answer normalization
+                parse.py                # parse model output → answer string
+                failures.py             # failure types & counters
 
-        analysis/
-            binning.py              # quantile/fixed bins
-            stats.py                # mean/var/bootstrap
-            cliff.py                # transition detection rules
+            analysis/
+                binning.py              # quantile/fixed bins
+                stats.py                # mean/var/bootstrap
+                cliff.py                # transition detection rules
 
-        reporting/
-            plots.py                # matplotlib only
-            render_md.py            # markdown report
-            render_json.py          # machine-readable profile
+            reporting/
+                plots.py                # matplotlib only
+                render_md.py            # markdown report
+                render_json.py          # machine-readable profile
 
-        outputs/
-            runs/                     # raw run artifacts
-            profiles/                 # computed bin summaries
-            reports/                  # md/html + figures
+            outputs/
+                runs/                     # raw run artifacts
+                profiles/                 # computed bin summaries
+                reports/                  # md/html + figures
 
 
 # Minimal Data Contracts

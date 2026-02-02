@@ -7,4 +7,6 @@ docs/specifications.md
 
 *.venv/
 uv.lock
-src/
+
+keys.txt
+
