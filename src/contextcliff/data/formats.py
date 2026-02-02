@@ -9,7 +9,7 @@ class Example:
     question: str
     answers: List[str]
     context_tokens: int
-    metadata: Dict[str, Any] = field(defauly_factory=dict)
+    metadata: Dict[str, Any] = field(default_factory=dict)
 
 @dataclass
 class Prediction:

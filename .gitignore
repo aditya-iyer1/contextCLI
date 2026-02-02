@@ -9,4 +9,7 @@ docs/specifications.md
 uv.lock
 
 keys.txt
+*.env
 
+__pycache__/
+src/contextcliff/cli/__pycache__/main.cpython-313.pyc

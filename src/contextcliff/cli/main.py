@@ -4,6 +4,8 @@ Creating the commands and subcommands for the CLI.
 '''
 
 import click
+from contextcliff.data.sampler import balance_samples
+
 @click.group() # Creates multi-command container for all subcommands
 def main():
     '''ContextCliff: Profiling the effective reasoning limit of LLMs'''
@@ -15,6 +17,7 @@ def prepare(dataset, bins):
     '''Scan dataset, calculate natural lengths, and generate a manifest'''
     # Will call data/sampler.py eventually
     click.echo(f"Preparing {dataset} into {bins} bins") # Outputs to terminal when run
+    balance_samples(bins)
 
 @main.command()
 @click.option('--manifest', required=True, help = "Path to manifest.json")
