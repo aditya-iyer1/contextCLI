@@ -1,3 +1,7 @@
+'''
+This file defines the data structures used by the CLI.
+'''
+
 from dataclasses import dataclass, field
 from typing import List, Optional, Dict, Any
 
