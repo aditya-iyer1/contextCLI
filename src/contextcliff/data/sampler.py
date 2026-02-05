@@ -128,16 +128,6 @@ def balance_samples(n_per_bin: int = 10, buffer_size: int = 2000):
     # 5.2: Calculate quantiles edges of buffer
     edges = np.quantile(lengths, np.linspace(0, 1, 11))
 
-    '''
-    5.3: Stratified Selection
-    - For each decile, select n_per_bin samples from the buffer to create final manifest
-    - Segment sorted list into 10 sub-lists based on the boundaries found in the previous step
-    - From each sub-list, pick n_per_bin samples
-    - Pick samples randomly within the bin or pick the ones closest to center of the bin to avoid edge-case overlap
-    - If a bin (120k+ token bin) only has 3 samples but I asked for 10? Conceptually, should take all 3, log a warning, and move on
-    - Use standard python random for sampling with bins
-    '''
-
     # 5.3: Stratified Selection
     # Select N samples from each bin from buffer to create final manifest
     selected_examples = []
