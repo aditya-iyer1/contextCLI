@@ -19,13 +19,23 @@ def prepare(dataset, bins):
     click.echo(f"Preparing {dataset} into {bins} bins") # Outputs to terminal when run
     balance_samples(bins)
 
+import time
+from contextcliff.runner.engine import Runner
+
 @main.command()
 @click.option('--manifest', required=True, help = "Path to manifest.json")
 @click.option('--model',default='gpt-4o', help = "Model to evaluate")
 def run(manifest, model):
     """Execute the evaluation based on the manifest"""
-    # Will call runner/engine.py eventually
-    click.echo(f"Running evaluation for {model}...")
+    run_id = f"{model}_{int(time.time())}"
+    click.echo(f"Initializing run {run_id} for {model}...")
+    
+    try:
+        runner = Runner(manifest, model, run_id)
+        # Future: Add cost confirmation check here
+        runner.run()
+    except Exception as e:
+        click.echo(f"Run failed: {e}")
 
 @main.command()
 @click.argument("run_id") # Used similar to flags, but for target/key values
