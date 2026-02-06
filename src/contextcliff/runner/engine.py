@@ -13,6 +13,27 @@ from contextcliff.runner.state import StateManager
 
 from contextcliff.eval.metrics import evaluate_example
 
+class MockClient(ModelClient):
+    """Mock client for testing."""
+    def __init__(self, model_name="mock"):
+        self.last_usage = {}
+
+    def generate(self, prompt: str, **kwargs) -> str:
+        # Return a dummy answer
+        # rough token count
+        n_tokens = len(prompt.split())
+        self.last_usage = {
+            "prompt_tokens": n_tokens, 
+            "completion_tokens": 10, 
+            "total_tokens": n_tokens + 10
+        }
+        return "Answer"
+
+    def get_token_usage(self):
+        return self.last_usage
+    def cost_estimate(self, prompt_tokens: int, max_completion_tokens: int) -> float:
+        return 0.0
+
 class Runner:
     """Orchestrates the evaluation process."""
     
@@ -27,6 +48,8 @@ class Runner:
         # Model Factory
         if "gpt" in model_name:
             self.client = OpenAIClient(model_name)
+        elif model_name == "mock":
+            self.client = MockClient()
         else:
             raise NotImplementedError("Only OpenAI supported in Phase 1")
             
@@ -85,6 +108,29 @@ class Runner:
                 
             except Exception as e:
                 print(f"Failed {example.id}: {e}")
+                err_type = "GenericError"
+                if "context_length_exceeded" in str(e) or "maximum context length" in str(e):
+                    err_type = "ContextLengthExceeded"
+                elif "Rate limit" in str(e):
+                    err_type = "RateLimitError" # Should be handled by retry, but if fails
+                
+                # Create a failure prediction record
+                pred = Prediction(
+                     example_id=example.id,
+                     raw_output="",
+                     latency_ms=0.0,
+                     usage={},
+                     parsed_output=f"{err_type}: {str(e)}"
+                )
+                # Zero metrics for failure
+                metrics = EvalRecord(
+                    example_id=example.id,
+                    context_tokens=example.context_tokens,
+                    f1_score=0.0,
+                    em_score=0.0,
+                    failure_type=err_type
+                )
+                self.state.save_prediction(self.run_id, example.id, pred, metrics)
                 continue
 
         print("Run complete.")

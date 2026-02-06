@@ -1,0 +1,8 @@
+Initializing run mock_1770361589 for mock...
+Starting run mock_1770361589 with 4 examples.
+Estimated Cost: $0.00 (Confirm with user in CLI if > threshold)
+Processed 0025577043f5090cd603c6aea60f26e236195594_-5857794572571649986: F1=0.00, Latency=1ms
+Processed 0025577043f5090cd603c6aea60f26e236195594_7930553869004159501: F1=0.00, Latency=0ms
+Processed 0025577043f5090cd603c6aea60f26e236195594_5525346554896690776: F1=0.00, Latency=0ms
+Processed 0025577043f5090cd603c6aea60f26e236195594_-7759777006866125140: F1=0.00, Latency=0ms
+Run complete.

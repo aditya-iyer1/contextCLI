@@ -1,180 +1,132 @@
+
 # Implements natural length distribution (NLDA) and verification detection (Wang, et al. 2026).
 # Tokenizes a large buffer and pulls N samples per quantile
 
-'''
-Internal logic:
-1. Ingest: Load NarrativeQA via HuggingFace Datasets
-2. Tokenize: Use tiktoken to get the natural length
-3. Sort: Rank the entire buffer by token count
-4. Quantize: Use numpy.quantile or similar to find the boundaries for 10 jobs
-5. Sample: Select N items from each bin and save them to a manifest.json
-
-- If NarrativeQA turns out to have no samples between 80k and 128k tokens, will find out now (for free) rather than after building broken runner
-- manifest.json acts as a "budget contract", to tell exactly how many tokens we are about to process before hitting run
-- Install tiktoken and datasets (huggingface) in environment
-- tokenizer: Am i ok using o200k_base (gpt4o) as reference tokenizer? Good industry proxy.
-
-1. Load reference token
-2. Length scanning: a function to scan a buffer (e.g. 1000-2000 samples) and calculate the natural token counts
-3. quantile calculation: Logic to determine the boundaries for 10 bins lie based on the buffer's distribution
-4. Stratified Selection: Logic to sleect N samples form each bin
-'''
-
-from datasets import load_dataset
-import tiktoken
-import os, json, random, time
-from dotenv import load_dotenv
-from contextcliff.data import formats
+import json, random, time
 import numpy as np
 from dataclasses import asdict
+from contextcliff.data.adapters.narrative_qa import NarrativeQAAdapter
 
-load_dotenv()
-HF_TOKEN = os.getenv("HF_Token")
-
-SYSTEM_PROMPT = (
-    "You are reading a comprehension system."
-    "Answer the question based only on the provided context.\n\n"
-)
-
-
-if HF_TOKEN is None:
-    raise ValueError("API_TOKEN not found in environment variables or .env file")
-
-
-def build_context(item):
-        return (
-            SYSTEM_PROMPT
-            + "Context:\n"
-            + item["document"]["text"]
-            + "\n\nQuestion:\n"
-            + item["question"]["text"]
-        )
-
-def balance_samples(n_per_bin: int = 10, buffer_size: int = 2000):
+def balance_samples(n_per_bin: int = 10, buffer_size: int = 2000, dataset_name: str = "narrativeqa"):
     """
-    Loads and balances the samples in the NarrativeQA dataset to ensure each bin has approximately the same number of samples.
+    Loads and balances the samples in the dataset to ensure each bin has approximately the same number of samples.
+    Merges sparse bins if needed (n < 10) to maintain statistical power.
     """
     start_time = time.perf_counter()
 
-    # 1. Load & Stream dataset, stream to avoid disk usage
-    dataset = load_dataset("narrativeqa", streaming=True, split="test", token=HF_TOKEN)
-    print("Done loading dataset!")
-    enc = tiktoken.get_encoding("o200k_base") # GPT-4o standard tokenizer
+    # 1. Initialize Adapter
+    if dataset_name == "narrativeqa":
+        adapter = NarrativeQAAdapter()
+    else:
+        raise ValueError(f"Unknown dataset: {dataset_name}")
 
-    # 2. Stream & Tokenize
-    print(f"Streaming and tokenizing {buffer_size} samples...")
+    print(f"Streaming and tokenizing {buffer_size} samples from {dataset_name}...")
     examples = []
+    
+    # 2. Stream into buffer
+    stream = adapter.load_stream()
+    try:
+        for i, example in enumerate(stream):
+            if i >= buffer_size: break
+            examples.append(example)
+    except Exception as e:
+        print(f"Stream interrupted or finished: {e}")
 
-    for i, item in enumerate(dataset):
-        if i >= buffer_size: break
+    print(f"Loaded {len(examples)} examples.")
+    if not examples:
+        print("No examples loaded.")
+        return []
 
-        # Built and encode prompt with context
-        context = build_context(item)
-        t_len = len(enc.encode(context))
-
-        # Clean answers to strings
-        ans_strings = [a["text"] for a in item["answers"]] if isinstance(item["answers"][0], dict) else item["answers"]
-        
-        # Map to formats.Example object
-        examples.append(formats.Example(
-            id=item["document"]["id"],
-            context=context,
-            question=item["question"]["text"],
-            answers=ans_strings,
-            context_tokens=t_len,
-            metadata= {"summary": item["document"]["summary"]}
-        ))
-
-        
-    # 4. Calculate lengths and create example objects
-    # print(buffer[0].keys())
-    # print(buffer[0]["document"].keys())
-    # print(buffer[0]["question"].keys())
-    # print(type(buffer[0]["answers"]), len(buffer[0]["answers"]))
-
-
-    # examples = []
-    # for item in buffer:
-        
-    #     context = build_context(item)   # Build the context string
-
-    #     tokens = enc.encode(context)   # Tokenize the context string
-    #     total_context_len = len(tokens)   # Get the total number of tokens in the context string
-
-    #     doc_len = len(enc.encode(item["document"]["text"]))
-    #    total_len = len(enc.encode(context))   # Get the total number of tokens in the context string
-        
-        # context = item["document"]["text"] + " " + item["question"]["text"]
-        # token_count = len(enc.encode(context))
-            
-    #    example = formats.Example(
-     #       id=item["document"]["id"],
-      #      context=context,
-      #      question=item["question"]["text"],
-      #      answers=item["answers"],                    # List of strings, need to check against all acceptable answers and take max score amongst them
-      #      context_tokens=total_len,
-      #      metadata= {"summary": item["document"]["summary"]}
-      #  )
-      #  examples.append(example)
-
-    # del buffer           # Free up memory by deleting the buffer
-
-    # 5. Sort and Bin logic (as we discussed previously)
-
-    # 5.1: Order samples to identify "long tail"
+    # 3. Sort and Bin logic
     examples.sort(key=lambda x: x.context_tokens)
     lengths = [example.context_tokens for example in examples]
     
-    # 5.2: Calculate quantiles edges of buffer
-    edges = np.quantile(lengths, np.linspace(0, 1, 11))
-
-    # 5.3: Stratified Selection
-    # Select N samples from each bin from buffer to create final manifest
-    selected_examples = []
-    bins = [[] for _ in range(10)]
-
-    # 5.3.1: Segment sorted list into 10 sub-lists based on the boundaries found in the previous step
-    for example in examples:
-        idx = np.searchsorted(edges, example.context_tokens, side="right") - 1
-        idx = min(max(0, idx), 9)
-        bins[idx].append(example)
-
-    # 5.3.2: From each sub-list, pick n_per_bin samples
-    for i, current_bin in enumerate(bins):
-        lower, upper = edges[i], edges[i+1]
-
-        if not current_bin:
-            print(f"Bin {i} ({int(lower)}-{int(upper)}): Empty. Skipping.")
-            continue
-
-        # If it's the very last bin, include the upper bound
-        # if i == 9:
-        #    current_bin = [ex for ex in examples if lower <= ex.context_tokens <= upper]
-        #else:
-        #     current_bin = [ex for ex in examples if lower <= ex.context_tokens < upper]
+    if len(lengths) < 10:
+        print("Not enough examples to quantize. Taking all.")
+        selected_examples = examples
+    else:
+        # Calculate initial quantile edges
+        n_bins = 10
+        edges = np.quantile(lengths, np.linspace(0, 1, n_bins + 1)) # 11 edges for 10 bins
         
+        bins = [[] for _ in range(n_bins)]
+
+        # Assign to bins
+        for example in examples:
+            # -1 because searchsorted returns 1 for the first bin (handling side='right' usually), 
+            # actually side='right' on [0..10] edges:
+            # if x < edge[0], index 0. if edge[0] <= x < edge[1], index 1.
+            # We want edge[i] <= x < edge[i+1] -> bin i
+            # np.searchsorted(edges, x, side='right') returns index where x could be inserted while maintaining order.
+            # If x is smaller than all edges, 0. If larger, len(edges).
+            # Let's stick to the previous working logic but robustify.
+            idx = np.searchsorted(edges, example.context_tokens, side="right") - 1
+            idx = min(max(0, idx), n_bins - 1)
+            bins[idx].append(example)
+
+        # 4. Merge Sparse Bins (User Requirement: n >= 10 statistical power)
+        # Strategy: Iterate from end (longest context) backwards. If a bin is sparse, merge into the one before it.
+        # Actually, if bin 9 is sparse, merge with 8. If 8 is sparse, merge with 7.
+        # Merged bins will effectively reduce the number of bins but increase density.
         
+        # We process from last to second-to-last
+        # Using a fresh list for merged bins to avoid index confusion
+        merged_bins = []
+        
+        # We'll just iterate and collect. 
+        # A better approach for "Merging":
+        # Check counts relative to n_per_bin or hard limit 10? User said "n < 10".
+        MIN_SAMPLES = 10 
+        
+        # We will do a pass: if bin[i] < MIN_SAMPLES, combine it with bin[i-1].
+        # Exception: Bin 0. If Bin 0 is sparse, we might have to merge Bin 1 into it? 
+        # Actually standard practice is usually merge small tails into larger bodies.
+        # User specified: "If 90-100th (last bin) has n=2, merge with 80-90th."
+        
+        # Working backwards
+        final_bins_map = {} # Map old_index -> examples
+        
+        # First pass: clean up empty lists
+        # (Though our quantile method guarantees ~equal counts if distribution is smooth. 
+        # Sparsity happens if buffer is small or distribution is discrete.)
+        
+        current_pool = []
+        current_indices = []
+        
+        # Let's try a forward pass to build valid chunks? 
+        # No, user specifically mentioned tail sparsity.
+        # Let's stick to the specific instruction: Merge top bin down if sparse.
+        
+        for i in range(n_bins - 1, 0, -1): # 9 down to 1
+            if len(bins[i]) < MIN_SAMPLES and len(bins[i]) > 0:
+                print(f"Bin {i} is sparse ({len(bins[i])} items). Merging into Bin {i-1}.")
+                bins[i-1].extend(bins[i])
+                bins[i] = [] # Clear it
+        
+        # Now collect samples
+        selected_examples = []
+        for i in range(n_bins):
+            current_bin = bins[i]
+            if not current_bin: continue
+            
+            # Re-calculate range for reporting
+            bin_min = min(ex.context_tokens for ex in current_bin)
+            bin_max = max(ex.context_tokens for ex in current_bin)
+            
+            if len(current_bin) <= n_per_bin:
+                print(f"Bin {i} (merged range {bin_min}-{bin_max} t): Taking all {len(current_bin)}")
+                selected_examples.extend(current_bin)
+            else:
+                print(f"Bin {i} (merged range {bin_min}-{bin_max} t): Sampling {n_per_bin} of {len(current_bin)}")
+                selected_examples.extend(random.sample(current_bin, n_per_bin))
 
-        # 5.3.3: Sample from current bin
-        if len(current_bin) <= n_per_bin:
-            # Take everything if we are under the budget for this bin
-            print(f"Bin {i} ({int(lower)}-{int(upper)} tokens): Taking all {len(current_bin)} samples.")
-            selected_examples.extend(current_bin)
-        else:
-            # Downsample to keep the manifest lean and cost-aware
-            print(f"Bin {i} ({int(lower)}-{int(upper)} tokens): Sampling {n_per_bin} from {len(current_bin)}.")
-            selected_examples.extend(random.sample(current_bin, n_per_bin))
-
-  
-    # 5. Creates manifest so the runner can execute without re-streaming, can use pydantic for more robust serialization
-
+    # 5. Serialize
     manifest_data = [asdict(example) for example in selected_examples]
 
     with open("manifest.json", "w") as f:
         json.dump(manifest_data, f, indent=4)
 
     print(f"Saved {len(selected_examples)} samples to manifest.json")
-
     elapsed_time = time.perf_counter() - start_time
     print(f"Time taken: {elapsed_time:.2f} seconds")
 

@@ -37,12 +37,41 @@ def run(manifest, model):
     except Exception as e:
         click.echo(f"Run failed: {e}")
 
+from contextcliff.analysis.binning import ResultBinner
+from contextcliff.analysis.cliff import CliffProfiler
+
 @main.command()
-@click.argument("run_id") # Used similar to flags, but for target/key values
+@click.argument("run_id")
 def profile(run_id):
     """Analyze results to detect variance spikes and 'The Cliff'"""
-    # Will call profiler/cliff.py eventually
     click.echo(f"Profiling results for run: {run_id}")
+    
+    # 1. Binning
+    binner = ResultBinner()
+    try:
+        raw_df = binner.load_run_data(run_id)
+        if raw_df.empty:
+            click.echo("No data found for this run ID.")
+            return
+
+        bins_df = binner.bin_results(raw_df)
+        
+        # 2. Cliff Detection
+        profiler = CliffProfiler()
+        cliff_data = profiler.detect_cliff(bins_df)
+        
+        # 3. Report
+        report = profiler.generate_markdown_report(run_id, bins_df, cliff_data)
+        
+        report_path = f"report_{run_id}.md"
+        with open(report_path, "w") as f:
+            f.write(report)
+            
+        click.echo(f"Report generated: {report_path}")
+        click.echo(f"Safe Cap: {cliff_data['safe_cap_tokens']}")
+        
+    except Exception as e:
+        click.echo(f"Profiling failed: {e}")
 
 if __name__ == "__main__":
     main()
