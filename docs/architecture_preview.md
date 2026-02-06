@@ -54,20 +54,6 @@
                 profiles/                 # computed bin summaries
                 reports/                  # md/html + figures
 
-# Key Tradeoffs
-
-## 4. Cliff Definition
-
-- Can define it via:
-  - Variance spike
-  - Failure rate spike
-  - Sharp mean drop
-  - A composite
-
-Start transparent: Two-threshold rule (Variance Spiek + Failure Spike); easier to explain and hard to game
-
-Based on the `architecture.md` file provided in the sources and the "Secret Sauce" requirements derived from your research (specifically the need for "Natural Length" enforcement and "Variance" detection), here is an evaluation of your repository structure.
-
 ### **Verdict: Conditional Go**
 
 The high-level layer separation (Data $\rightarrow$ Runner $\rightarrow$ Metric $\rightarrow$ Profiler) is **fundamentally sound**. It correctly decouples "running the test" from "analyzing the result," which is crucial for the "Black-box Determinism" you committed to in `overview.md`.

@@ -191,12 +191,131 @@ The presentation layer contains the logic to write out the metrics, cliffs, and 
         - Transition: high variance / volatile outcomes
         - Degraded: persistently low mean + high failure
         - Recommended safe cap: token threshold
+   - Current benchmarks give a single score (e.g., "78% accuracy"). Your tool gives an operational constraint (e.g., "Do not exceed 51k tokens for Qwen2.5-7B"). This directly translates to production stability.
    4. **Making it Usable**:
       - **Visual plot Requirement**:
         - **X-axis:** Natural Context Length (Tokens).
         - **Y-axis:** Performance (Primary) + Variance (Secondary, e.g., error bars).
         - **Markers:** Explicitly label the **"Safe Operating Cap"**—the maximum token count before variance exceeds a predefined "Stability Threshold".
         - **Machine-Readable Export**: A JSON file containing the `[min, median, max]` tokens and `n_samples` for every bin to ensure the results are reproducible.
+
+## Major Specifcations
+
+1. **Quantile Binning -> Fixed-Width:** Use quantiles for analysis, convert to token thresholds in the final recommendation.
+   - To detect "Variance Spike", need a stable $n$ per bin.
+   - "Shallow Long-Context Adaptation" uses percentage based bins to identify transition region
+   - Engineers need an operational constraint, rather than statistical abstraction
+   - Binning implemented in the `parser`, conversion back to tokens implemented in before the final reporting stage
+2. **Network Retry vs Generation Fail**: Handle Transport errors via Backoff, treat empty/malformed/refusal outputs as terminal failures
+   - **Rationale**: Transport errors (500s/timeouts) are noise; generation errors (broken JSON/refusals) are the **signal**. Retrying "I cannot help with that" hides the cliff-edge instability we aim to measure
+   - **Supporting Info**: Long-context calls (100k+) are high-latency/high-cost; crashing on a timeout is a resource waste. "Context Rot" logic dictates model refusal is a valid data point for the "Degraded Region".
+   - **Implementation**:
+     - **Transport**: `models/base.py` implements a decorator for HTTP 500/429/RequestTimeout
+     - **Logic**: `models/openai.py` (or vLLM) returns a `null` or `Failure` object on parse errors.
+     - **Persistence**: `runner/state.py` (SQLite) stores `prompt_hash` + `model_output` immediately after succesful transport to prevent redundant spending.
+3. **SQuAD-style Normalized Token-F1**: Use bag-of-words overlap (P/R) for generative QA tasks.
+   - **Rationale**: Exact-Match (EM) is too brittle for narrativeQA; it provides binary signal that masks the "gradient of degradation". F1 captures the model's gradual loss of coherence.
+   - **Supporting Info**: "Shallow Adaptation" paper uses F1 as the primary "Intelligence" metric $I(L)$. Requires standard normalization (lowercase, strip punctuation/articles).
+   - **Implementation**: `metrics/scorers.py`
+     - **Logic**: `compute_f1(prediction, ground_truth)` function
+     - **Preprocessing**: Integrated into the `Parser` before the scorer is called.
+4. **Stratified Stratification by Token Count**: Proactively fill length bins to ensure equal power across context range
+   - **Rationale**: Natural-Distributions are usually bottom-heavy. Without stratification, the "cliff" regions will have sparse data, making variance spikes indistinguishable from outlier noise.
+   - **Supporting Info**: Wang et al (2026) emphasizes that threshold precision depends on sample density in the 40-50% context range. This turns the pipeline from a "stream" into a "targeted pull".
+   - **Implementation**: `data/sampler.py`
+     - **Logic**:
+       - Scan entire dataset to create a `length_map` (Id -> TokenCount).
+       - Define $B$ bins (deciles)
+       - For each bin, sample $N$ IDs.
+       - If a bin is "starved" (fewer than N available), the CLI must flag a **distribution warning** and pull available samples for that tail
+     - **CLI Command**: `contextcliff prepare --dataset narrativeqa --samples-per-bin 20` creates the manifest.json.
+5. **Latency Telemetry as a Reasoning Canary**: Capture TFFT and total request duration for every sample to detect "Internal Processing Stress" before accuracy collapses.
+   - **Rationale**: High-variance latency is often a leading indicator of a cliff. A model might maintain F1 scores but show "stalling" behavior (massive latency spikes) as it nears its reasoning limit, signaling that the "Stable Region" is ending.
+   - **Supporting Info**: "Context Rot" research suggests that as input density inreases, KV-cache management or attention overhead can cause non-linear latency growth. Capturing this allows the Profiler to identify a "Resource Cliff" even if an "Accuracy Cliff" isn't yet visible.
+   - **Implementation**: Add `tfft_ms` and `total_duration_ms` to the `Prediction` object/`EvalRecord` in `data/formats.py`
+     - **Runner**: `models/base.py` uses `time.perf_counter()` to wrap the inference call
+     - **Storage**: Update the SQLite schema in `runner/state.py` to include these telemtry columns.
+     - **Profiler**: `profiler/cliff.py` should calculate "Latency Variance" as a secondary signal for the Transition Zone.
+6. **Automated Failure Taxonomy**: Programmatically categorize non-correct responses into three distinct error buckets to isolate why the cliff occurs.
+   - **Rationale**: A drop in F1 is a "what", a taxonomy is the "why". Distinguishing between a model that forgets the task (Drift) vs. one that gives up (refusal) vs. one that breaks the pipe (Schema) is essential for the failure profile
+   - **Supporting Info**: Research on LITM shows that models often drift towards summarizing the end of the context instead of answering query. Identifying false negatie (Refusal when info present) specifially maps to the "Shallow Adaptation" cliff where capacity is exceeded.
+   - **Implementation**: `metrics/taxonomy.py`
+     - **Logic**:
+       - Schema Violation: Triggered if `json.loads()` fails or specific keys are missing
+       - Refusal: Regex-based checks for "I am sorry", "not mentioned", "cannot find", etc.
+       - Instruction Drift: Heuristic Check - if the answer length exceeds a certain ratio of the ground truth or fails to contain any nouns from the query, it is staged as drift.
+     - **Data Layer**: `EvalRecord` must have a `failure_tag` (Enum)
+7. **MVE Cliff Detection & Model Comparison**: Use a 5-bin stratified test (4k vs 128k) to compare "Small" vs "Large" model stability curves.
+   - **Rationale**: Comparing models with different parameter counts/budgets validations if the "Cliff" is a function of model capacity. The 5-bin approach minimizes API costs while maintaining enough resolution to identify the transition zone.
+   - **Supporting Info**: Research on Shallow Long-Context Adaptaion suggests cliff points are task and scale dependent. Using a baseline (0-8k) performance level is needed to calculate "mean drop" and "var spike" relative to optimal behavior.
+   - **Implementation**:
+     - **Layer**: Profiler/Analysis
+     - **Role**: Post-processing engine that compares bin-wise statistics
+     - **Logic**:
+       - Establish baseline $\mu$ and $\sigma$ from the 4k bin.
+       - Flag "Transition" if $\sigma_{bin} \ge 2\sigma_{baseline}$.
+       - Flag "Cliff" if $\mu_{bin}$ drops > 30% from $\mu_{baseline}$
+   - **Visualization**: Generates a dual-line plot (F1 vs Length) for the two models to visually show the "Shifted Cliff"
+8. **Conservative Safe Cap Calculation**: Map quantile failure bins to their token lower bounds for reporting
+   - **Rationale**: Statistical Significance requires stable $n$ (quantiles), but engineering requires a concrete token limit. Reporting the lower bound of the first failing bin provides a "safety-first" conservative estimate for production deployments.
+   - **Supporting Info**: "Shallow Adaptation" (Wang et al., 2026) suggests that cliff behavior is often sudden; using the lower bound ensures the user stays safely within the "Stable Region" before the transition volatility begins.
+   - **Implementation**:
+     - **Layer**: Profiler / Report Layer
+     - **Role**: Translate statistical analysis into operational constraints
+     - **Logic**:
+       - Identify `bin_i` where $\sigma$ exceeds threshold or $\mu$ drops > 30%.
+       - Query the `Data Layer` for the `min_tokens` value associated with `bin_i`
+       - Output this integer as the `Effective Reasoning Limit`.
+       - Store the `(Bin_ID, Token_Range)` map in the final report JSON to allow for manual data auditing.
+
+## General Critiques
+
+1. **Pros**:
+   - Current benchmarks give a single score (e.g., "78% accuracy"). Your tool gives an operational constraint (e.g., "Do not exceed 51k tokens for Qwen2.5-7B"). This directly translates to production stability.
+   - Your focus on "cliff thresholds" and "transition variance" aligns perfectly with cutting-edge findings that degradation is catastrophic (cliff-like) rather than linear. The drop often happens over a narrow 10% range of the context window.
+   - Most existing tools use truncation or padding (artificial length). If your CLI enforces "Natural Length Distribution Analysis" (evaluating samples at their original lengths), you solve a major methodological flaw in current evals where truncation confounds results with information loss
+   - Stick with the "Natural Length" knob. It is the most scientifically rigorous contribution that can be made, distinguishing the tool from every other NIAH script.
+2. **Risks**:
+   - **Data Scarcity**: To plot a smooth curve using "natural length" (without truncation), you need a dataset with a perfect distribution of lengths from 1k to 128k tokens. Most datasets are clustered (e.g., SQuAD is <1k tokens). You will need a "Mixed Dataset" strategy (e.g., combining SQuAD for short and NarrativeQA for long) to cover the 5%–95% context range.
+   - **Compute Cost**: Generating a curve requires running the model at 10%, 20%, ... 100% context. For a 128k model, this is computationally expensive. Your "One-liner" needs to clarify if this is a one-time profiling run or a CI/CD check.
+   - **Multi-Hop Complexity**: The "distance" knob is harder than it looks. It’s not just about absolute position; performance degrades based on the relative distance between two necessary pieces of evidence. Your harness needs to track inter-evidence distance, not just "needle" depth.
+3. **Key Implementations**:
+   - **Make the Cliff Predictable (40-50% Rule)**:
+     - Models often maintain stable performance up to a "critical threshold" (often 40-50% of the max context) before suffering a catastrophic drop (e.g., F1 score dropping form ~0.56 to ~0.30).
+     - Don't just look for the drop. Look for transition variance. Just before the cliff, model performance becomes highly unstable (high standard deviation). A spike in variance is the "early warning system" for the risk report.
+   - **Natural Length Implementation**:
+     - Do not truncate documents to fit a length bucket. Instead, bin test samples by inherent token count.
+     - Truncation creates "artifacts" - it might cut off reasoning chains. Padding distorts attention patterns. The CLI should reject datasets that don't naturally span the target context length.
+   - **Shallow Adaptation Theory**:
+     - Models suffer form "shallow long-context adaptation". They optimize for short/medium contexts during training. When pushed past the threshold, attention weights become too uniformly distributed (high entropy), preventing focus.
+     - The risk report should calculate attention entropy. If entropy crosses a certain threshold, the model is entering the "Degraded Region".
+4. **Gap Analysis: Has it been done?**
+   - Partially, but poorly. Tools like RULER or NIAH exist. However:
+     - NIAH is a retrieval proxy, not a reasoning test. Models can pass NIAH while failing actual tasks.
+     - Most benchmarks use truncation to fit context windows, which corrups the causal link between length and performance.
+     - There is no widely available tool that outputs a "Safe Operating Region" (e.g., "Safe up to 43% context").
+   - Does it fill a genuine issue?
+     - Yes. There is currently a "blind reliance" on claimed context windows (e.g. "It fits in 128k, so it works").
+     - The Gap: Engineers need to know the "Effective Reasoning Length", which is often significantly shorter than the techical context limit. The tool provides this specific number.
+5. **Cost & Feasability**:
+   - **Hardware Reality**: You cannot run long-context evaluations locally on an M2 with 8GB RAM. A 7B model (like Qwen2.5-7B) requires ~14GB+ of VRAM to process 128k context even with quantization, and the Key-Value (KV) cache for long sequences grows massive, quickly causing Out-Of-Memory errors.
+     - **The Fix**: API is cheap. You should use APIs. The cost is surprisingly low if you choose the right models.
+       - DeepSeek-V3 is priced at ~$0.27 per 1M input tokens.
+       - The Math: To plot one "cliff curve" (testing 10 points from 10k to 100k context), you process roughly 550k tokens.
+       - Total Cost: That is roughly 0.15 per curve — you can run hundreds of experiments for <$50
+   - This is very realistic for one person. The "heavy lifting" is done by the API provider; the CLI just manages the logic and plotting.
+6. **Automation & Testing**:
+   - You do not manually test. You use proxy tasks where the "correct answer" is already known (Ground Truth).
+   - How to automate:
+     - Synthetic Retrieval: Inject a random UUID (e.g., "Passkey: 98123") into a long document. Check if the model outputs "98123". This is a binary (1/0) check you can code in Python
+     - Reading Comprehension: Use datasets like NarrativeQA or SQuAD. You feed the model the story + question. You compare the model's text output to the reference answer using F1 Score (word overlap) or Exact Match. No humans required.
+   - Is all context different? (The 50K simple vs 50K Complex question)
+     - Yes, absolutely. The sources confirm that "Intelligence Degradation" depends on information density and reasoning complexity, not just token count
+     - The Evidence: A model might handle 100k tokens of "simple retrieval" (finding a needle) perfectly but suffer a "cliff-like" collapse at 40-50% capacity when doing "multi-hop reasoning" (connecting two distant facts).
+     - Your Solution: Your CLI should categorize tests by complexity.
+       - Level 1: "Needle in a Haystack" (Simple Retrieval).
+       - Level 2: "Multi-hop QA" (Reasoning over density).
+       - Result: Your report will likely show the "Simple" cliff at 120k tokens and the "Complex" cliff at 50k tokens.
 
 ## Project Architecture (Conceptual — Updated as files are added) -> Check architecture_preview.md for more conceptual breakdown
 
@@ -304,14 +423,26 @@ Separation prevents analysis code from knowing anything about OpenAI responses, 
 1. **Docker**: Highly recommended for the KV Cache/vLLM part. vLLM has many dependencies (CUDA, specific python versions). Running it in a Docker container on the cloud GPU will save days of environment issues.
 2. **SkyPilot or Lambda Labs CLI**: Since I don't have a local GPU, I'll need a way to launch a cloud instance (A100/A6000).
 3. **Weights & Biases (Optional)**: If I want "Pro" research charts for the professor, this tool tracks experiments automatically.
-4. **Pytest**: Essential for the "Agentic Workflow". Will want to write a test that checks if the "Output Parser" actually works before I spend any money on long-context calls.]
-
-## Follow-Up Questions
-
-1. **Budget Constraint:** What is your specific "per-model" budget? (e.g., Is <$50 per curve a hard limit?) This determines how aggressively the **Bin-Aware Sampler** needs to work.
-2. **Model Selection:** Are you planning to test specific "frontier" models (like GPT-4o) or "open-weights" models (like Qwen2.5) via API providers?
-3. **Stability Definition:** What constitutes an "unacceptable" variance spike for your use case? (e.g., A 10% increase in standard deviation or a specific drop in the 10th percentile of scores?)
+4. **Pytest**: Essential for the "Agentic Workflow". Will want to write a test that checks if the "Output Parser" actually works before I spend any money on long-context calls.
 
 ## CLI User Input:
 
 `contextcliff --data <path_to_data> --model <model_name> --kv_policy <policy> --kv_budget <budget> --task <task_type>`
+
+Example Output 1:
+
+    $ contextcliff profile --model Qwen2.5-7B --task multi_hop_qa
+
+    FAILURE RISK REPORT
+    -------------------
+    Max Technical Context: 128,000 tokens
+    Critical Threshold:    55,296 tokens (43.2% of max) [HIGH CONFIDENCE]
+
+    ZONES:
+    [OK] Stable Region:      0 - 51,200 tokens (Mean F1: 0.56)
+    [!!] Transition Zone:    51,200 - 64,000 tokens (High Variance detected)
+    [XX] Degraded Region:    > 64,000 tokens (Performance drop: -45.5%)
+
+    RECOMMENDATION:
+    Hard cap inference context at 51,000 tokens.
+    RoPE extrapolation failure predicted at ~49% context.
