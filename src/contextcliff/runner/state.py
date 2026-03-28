@@ -211,6 +211,7 @@ class StateManager:
 
         config_json = json.dumps(run_metadata)
         conn = sqlite3.connect(self.db_path)
+        # Implicit transaction (legacy isolation_level) wraps all DML until commit/rollback.
         cursor = conn.cursor()
         try:
             cursor.execute("SELECT run_source FROM runs WHERE run_id = ?", (run_id,))

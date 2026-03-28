@@ -44,9 +44,17 @@ def _json_float(value: Any, default: float = 0.0) -> float:
     return float(value)
 
 
-def parse_artifact_v1(raw: Dict[str, Any]) -> Tuple[Dict[str, Any], List[Dict[str, Any]]]:
-    """Validate and normalize a v1 artifact. Returns ``(run_metadata, prediction_rows)``."""
+def parse_artifact_v1(raw: Any) -> Tuple[Dict[str, Any], List[Dict[str, Any]]]:
+    """Validate and normalize a v1 artifact. Returns ``(run_metadata, prediction_rows)``.
+
+    Raises ``ValueError`` with a clear message before any database write — all-or-nothing
+    validation for the artifact shape.
+    """
+    if not isinstance(raw, dict):
+        raise ValueError("artifact must be a JSON object at the root")
     ver = raw.get("schema_version")
+    if ver is None:
+        raise ValueError("schema_version is required")
     if ver != SUPPORTED_SCHEMA_VERSION:
         raise ValueError(
             f"Unsupported schema_version: {ver!r}; only {SUPPORTED_SCHEMA_VERSION!r} is supported."

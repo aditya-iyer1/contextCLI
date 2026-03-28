@@ -82,6 +82,9 @@ def import_cmd(artifact, run_id, label, artifact_ref, db_path, replace):
             replace=replace,
         )
         click.echo(f"Imported run {run_id!r} into {db_path}")
+    except json.JSONDecodeError as e:
+        click.echo(f"Invalid JSON in artifact file: {e}", err=True)
+        sys.exit(2)
     except ValueError as e:
         click.echo(f"Error: {e}", err=True)
         sys.exit(2)
