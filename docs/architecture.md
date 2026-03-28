@@ -10,6 +10,13 @@
 
 SQLite **`state.db`** stores **`runs`** (one row per logical run: provenance via **`run_source`** **`internal`** | **`imported`**, optional **`external_label`** / **`artifact_ref`**) and **`predictions`** (per-example scores and outputs keyed by **`run_id`**). Internal API/mock executions register a **`runs`** row at **`Runner.run()`** start; **`contextcliff import`** inserts **`imported`** rows from a JSON file (`schema_version`, `run_metadata`, `predictions` array).
 
+## Profile / reporting
+
+- **`contextcliff profile RUN_ID`** reads predictions from **`state.db`**, bins by length, and writes **`report_<run_id>.md`** (cliff heuristic + tables). Optional **`runs.config`** JSON may include **`analysis_filters`**: **`min_prompt_tokens`**, **`max_prompt_tokens`**, **`compression_active_only`** (requires a manifest for per-example signals).
+- **CLI overrides:** **`--min-prompt-tokens`**, **`--max-prompt-tokens`** override those bounds for a single invocation. **`--manifest PATH`** loads **`manifest.json`** (same shape as **`prepare`** output) to join **`example_id`** ↔ manifest **`id`**.
+- **Manifest metadata (optional):** **`metadata.compression_active`** (bool) for compression-only filtering; **`metadata.needle_position_bucket`** (str) for positional/needle summary tables in the report.
+- Reports add **metrics interpretation** (latency vs throughput), **caveats** for imported runs, and **analysis warnings** when a requested filter cannot be applied (e.g. compression filter without manifest).
+
 ## Documentation map
 
 | Document | Role |
