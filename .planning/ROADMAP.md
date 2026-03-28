@@ -177,7 +177,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 6. Signal contract | 0/? | Definition locked | 2026-03-27 (spec) |
+| 6. Signal contract | 0/? | **Complete** (PR #5 merged) | 2026-03-28 |
 | 7. Controlled dataset | 0/? | Not started | — |
 | 8. Baseline API validation | 0/? | Not started | — |
 | 9. Statistical robustness | 0/? | Not started | — |
