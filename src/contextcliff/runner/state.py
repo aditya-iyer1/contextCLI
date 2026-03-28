@@ -4,12 +4,42 @@ import json
 from typing import Optional, Dict, Any, List
 from contextcliff.data.formats import Prediction, EvalRecord
 
+_RUNS_PROVENANCE_ALTERS = (
+    "ALTER TABLE runs ADD COLUMN run_source TEXT NOT NULL DEFAULT 'internal'",
+    "ALTER TABLE runs ADD COLUMN external_label TEXT",
+    "ALTER TABLE runs ADD COLUMN artifact_ref TEXT",
+)
+
+
 class StateManager:
     """Handles persistence of evaluation state (runs, results) to SQLite."""
 
     def __init__(self, db_path: str = "state.db"):
         self.db_path = db_path
         self._init_db()
+
+    def _migrate_runs_provenance(self, cursor: sqlite3.Cursor) -> None:
+        """Idempotent: provenance columns on ``runs``, defaults, backfill from ``predictions``."""
+        for stmt in _RUNS_PROVENANCE_ALTERS:
+            try:
+                cursor.execute(stmt)
+            except sqlite3.OperationalError as e:
+                if "duplicate column" not in str(e).lower():
+                    raise
+        cursor.execute(
+            """
+            UPDATE runs SET run_source = 'internal'
+            WHERE run_source IS NULL OR trim(run_source) = ''
+            """
+        )
+        cursor.execute(
+            """
+            INSERT OR IGNORE INTO runs (run_id, timestamp, config, run_source, external_label, artifact_ref)
+            SELECT DISTINCT p.run_id, CURRENT_TIMESTAMP, NULL, 'internal', NULL, NULL
+            FROM predictions p
+            WHERE NOT EXISTS (SELECT 1 FROM runs r WHERE r.run_id = p.run_id)
+            """
+        )
 
     def _init_db(self):
         """Create tables if they don't exist."""
@@ -51,6 +81,40 @@ class StateManager:
         except sqlite3.OperationalError:
             pass # Columns exist
 
+        self._migrate_runs_provenance(cursor)
+
+        conn.commit()
+        conn.close()
+
+    def register_internal_run(
+        self, run_id: str, config: Optional[Dict[str, Any]] = None
+    ) -> None:
+        """Register this process as an **internal** harness run (API/mock).
+
+        Inserts or updates ``runs`` with ``run_source='internal'``. Merging runs from
+        external experiments (``imported``) is Phase 3 — not handled here.
+
+        On conflict for the same ``run_id``, ``run_source`` stays ``internal``,
+        ``config`` and ``timestamp`` are updated, and nullable provenance fields are cleared.
+        """
+        if not run_id or not str(run_id).strip():
+            raise ValueError("run_id must be non-empty")
+        config_json = json.dumps(config) if config is not None else None
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            INSERT INTO runs (run_id, timestamp, config, run_source, external_label, artifact_ref)
+            VALUES (?, CURRENT_TIMESTAMP, ?, 'internal', NULL, NULL)
+            ON CONFLICT(run_id) DO UPDATE SET
+                config = excluded.config,
+                timestamp = CURRENT_TIMESTAMP,
+                run_source = 'internal',
+                external_label = NULL,
+                artifact_ref = NULL
+            """,
+            (run_id, config_json),
+        )
         conn.commit()
         conn.close()
 

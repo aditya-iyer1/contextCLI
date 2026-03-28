@@ -6,6 +6,10 @@
 - Experiments that require custom KV-cache behavior run **outside** this repository; bringing those results into the same SQLite reporting pipeline will be supported via an **`import`** path in a later milestone.
 - The CLI commands are **`prepare`** → **`run`** → **`profile`** (see package entry `contextcliff` in `pyproject.toml`).
 
+## Persistence
+
+SQLite **`state.db`** stores **`runs`** (one row per logical run: provenance via **`run_source`**, optional **`external_label`** / **`artifact_ref`** for merged experiments) and **`predictions`** (per-example scores and outputs keyed by **`run_id`**). Internal API/mock executions register a **`runs`** row at **`Runner.run()`** start; imported runs are a later milestone.
+
 ## Documentation map
 
 | Document | Role |

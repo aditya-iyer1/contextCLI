@@ -79,6 +79,10 @@ class Runner:
 
     def run(self):
         """Execute the run loop."""
+        self.state.register_internal_run(
+            self.run_id,
+            config={"model_name": self.model_name, "manifest_path": self.manifest_path},
+        )
         cost = self.check_cost()
         print(f"Starting run {self.run_id} with {len(self.examples)} examples.")
         print(f"Estimated Cost: ${cost:.2f} (Confirm with user in CLI if > threshold)")
