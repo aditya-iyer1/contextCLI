@@ -7,7 +7,7 @@ Five **coarse** phases follow the **execution order** in `PROJECT.md`: strip mis
 ## Phases
 
 - [x] **Phase 1: Deprecate docs & API contract** — Remove or deprecate misleading KV-runtime narrative; canonical “API/mock only + import” story; verify CLI/runner surface (DOC-01, DOC-02, RUN-01).
-- [ ] **Phase 2: Run provenance in SQLite** — Schema/migration for internal vs imported runs (STA-01).
+- [x] **Phase 2: Run provenance in SQLite** — Schema/migration for internal vs imported runs (STA-01). *(2026-03-28)*
 - [ ] **Phase 3: External import bridge** — CLI + persistence path for labeled imports (IMP-01).
 - [ ] **Phase 4: Analysis & reporting** — Filtering, caveats, positional diagnostics, latency vs throughput (ANA-01–ANA-04).
 - [ ] **Phase 5: Dependencies & codebase map** — `python-dotenv` declaration if needed; refresh `.planning/codebase/*` (DEP-01, DOC-03).
@@ -51,9 +51,13 @@ Plans:
 1. New or migrated DB stores provenance needed to label internal vs imported runs.
 2. Existing `state.db` from prior usage still opens and migrates without data loss for core prediction rows.
 
-**Plans:** TBD (plan in `/gsd-plan-phase 2`)
+**Plans:** 1 plan (02-01)
 
 **UI hint:** no
+
+Plans:
+
+- [x] **02-01:** Provenance columns, migration, `register_internal_run`, `Runner` registration (see `02-01-PLAN.md`, `02-01-SUMMARY.md`).
 
 ---
 
@@ -122,7 +126,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Deprecate docs & API contract | 1/1 | Complete | 2026-03-28 |
-| 2. Run provenance in SQLite | — | Not started | — |
+| 2. Run provenance in SQLite | 1/1 | Complete | 2026-03-28 |
 | 3. External import bridge | — | Not started | — |
 | 4. Analysis & reporting | — | Not started | — |
 | 5. Dependencies & codebase map | — | Not started | — |

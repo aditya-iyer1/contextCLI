@@ -19,7 +19,7 @@ Scope is the **Omega reset** (architecture reset milestone) only—no feature ex
 
 ### Persistence
 
-- [ ] **STA-01**: `state.db` schema (or compatible extension) records **run provenance** that distinguishes **internal** API/mock runs from **imported** runs, with a **backward-compatible** migration for existing databases.
+- [x] **STA-01**: `state.db` schema (or compatible extension) records **run provenance** that distinguishes **internal** API/mock runs from **imported** runs, with a **backward-compatible** migration for existing databases.
 
 ### Import
 
@@ -56,7 +56,7 @@ None for this milestone. Deferred work (e.g. richer compare UI, extra datasets) 
 | DOC-01 | Phase 1 | Pending |
 | DOC-02 | Phase 1 | Pending |
 | RUN-01 | Phase 1 | Pending |
-| STA-01 | Phase 2 | Pending |
+| STA-01 | Phase 2 | Complete |
 | IMP-01 | Phase 3 | Pending |
 | ANA-01 | Phase 4 | Pending |
 | ANA-02 | Phase 4 | Pending |
@@ -69,4 +69,4 @@ None for this milestone. Deferred work (e.g. richer compare UI, extra datasets) 
 
 ---
 *Requirements defined: 2026-03-27*  
-*Last updated: 2026-03-27 after derivation from PROJECT.md*
+*Last updated: 2026-03-28 — STA-01 satisfied (Phase 2 complete).*

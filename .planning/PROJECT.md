@@ -21,6 +21,7 @@ Existing codebase capabilities (see `.planning/codebase/ARCHITECTURE.md`, `STACK
 - ✓ **Failure taxonomy** — `EvalRecord.failure_type` set on errors (e.g. context length, rate limit) in `Runner.run`.
 - ✓ **Analysis & report** — length binning (`analysis/binning.py`), cliff heuristics and markdown report (`analysis/cliff.py`).
 - ✓ **Data layer** — HF NarrativeQA adapter, NLDA-style quantile sampling (`data/sampler.py`, `data/adapters/narrative_qa.py`).
+- ✓ **Run provenance (STA-01)** — `runs.run_source` / `external_label` / `artifact_ref`, migration + backfill, internal registration in `Runner.run()` (`Phase 2`, 2026-03-28).
 
 ### Active
 
@@ -97,4 +98,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state  
 
 ---
-*Last updated: 2026-03-27 after project initialization (brownfield architecture reset scope)*
+*Last updated: 2026-03-28 — Phase 2 (STA-01) validated; Validated section updated.*
