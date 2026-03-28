@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Signal validation (Alpha)
-status: "Phase 7 complete — SIG-02 shipped"
+status: "Phase 7 shipped — PR #6"
 stopped_at: Phase 8 — baseline API validation (next)
-last_updated: "2026-03-28T12:00:00.000Z"
+last_updated: "2026-03-28T14:00:00.000Z"
 last_activity: 2026-03-28
 progress:
   total_phases: 7
@@ -27,7 +27,7 @@ See: `.planning/PROJECT.md` (updated 2026-03-27)
 
 Phase: **8 — Baseline API validation** — not started  
 Plan: — (`/gsd-plan-phase 8`)  
-Status: Phase **7** complete — [`07-01-SUMMARY.md`](phases/07-controlled-dataset/07-01-SUMMARY.md)  
+Status: Phase **7** shipped — [PR #6](https://github.com/aditya-iyer1/contextCLI/pull/6) · [`07-01-SUMMARY.md`](phases/07-controlled-dataset/07-01-SUMMARY.md)  
 Last activity: 2026-03-28
 
 ## Performance Metrics
