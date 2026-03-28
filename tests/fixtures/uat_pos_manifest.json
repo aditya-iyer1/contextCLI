@@ -1,0 +1,22 @@
+[
+  {
+    "id": "e1",
+    "context": "",
+    "question": "",
+    "answers": [],
+    "context_tokens": 100,
+    "metadata": {
+      "needle_position_bucket": "early"
+    }
+  },
+  {
+    "id": "e2",
+    "context": "",
+    "question": "",
+    "answers": [],
+    "context_tokens": 200,
+    "metadata": {
+      "needle_position_bucket": "late"
+    }
+  }
+]
