@@ -103,6 +103,12 @@ class CliffProfiler:
         """
         
         md = f"# ContextCliff Report: Run {run_id}\n\n"
+        if bins_df.empty:
+            md += (
+                "_No length bins could be computed (empty input after filtering). "
+                "This should not normally appear; use stricter filters or more rows._\n"
+            )
+            return md
         if provenance:
             rs = provenance.get("run_source")
             el = provenance.get("external_label")

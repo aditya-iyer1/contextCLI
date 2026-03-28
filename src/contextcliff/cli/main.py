@@ -21,6 +21,7 @@ from contextcliff.analysis.profile_report import (
     effective_filters,
     load_manifest_df,
     parse_run_config,
+    validate_token_bounds,
 )
 from contextcliff.data.sampler import balance_samples
 from contextcliff.import_bridge.artifact_v1 import parse_artifact_v1
@@ -115,13 +116,13 @@ def import_cmd(artifact, run_id, label, artifact_ref, db_path, replace):
     "--min-prompt-tokens",
     default=None,
     type=int,
-    help="Override/analysis: minimum prompt_tokens per row before binning (overrides runs.config analysis_filters).",
+    help="Override/analysis: minimum prompt_tokens per row before binning (inclusive; overrides runs.config; must be <= max if both set).",
 )
 @click.option(
     "--max-prompt-tokens",
     default=None,
     type=int,
-    help="Override/analysis: maximum prompt_tokens per row before binning (overrides runs.config analysis_filters).",
+    help="Override/analysis: maximum prompt_tokens per row before binning (inclusive; overrides runs.config; must be >= min if both set).",
 )
 def profile(run_id, db, manifest, min_prompt_tokens, max_prompt_tokens):
     """Analyze SQLite results for a run_id and write a markdown cliff report.
@@ -137,6 +138,10 @@ def profile(run_id, db, manifest, min_prompt_tokens, max_prompt_tokens):
         cfg_raw = prov.get("config") if prov else None
         run_config, cfg_warnings = parse_run_config(cfg_raw if isinstance(cfg_raw, str) else None)
         filters = effective_filters(run_config, min_prompt_tokens, max_prompt_tokens)
+        bound_err = validate_token_bounds(filters)
+        if bound_err:
+            click.echo(bound_err, err=True)
+            sys.exit(2)
 
         manifest_df = None
         if manifest:
@@ -155,12 +160,18 @@ def profile(run_id, db, manifest, min_prompt_tokens, max_prompt_tokens):
             sys.exit(2)
 
         bins_df = binner.bin_results(filtered_df)
+        if bins_df.empty:
+            click.echo(
+                "No length bins could be computed from the filtered rows (insufficient data for binning).",
+                err=True,
+            )
+            sys.exit(2)
 
         profiler = CliffProfiler()
         cliff_data = profiler.detect_cliff(bins_df)
 
         caveats = build_caveats_section(prov or {}, run_config)
-        metrics_md = build_metrics_interpretation_note(prov or {}, run_config)
+        metrics_md = build_metrics_interpretation_note(prov or {}, run_config, filters)
         positional_md = build_positional_section(filtered_df, manifest_df)
 
         extras = ReportExtras(

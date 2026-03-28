@@ -55,6 +55,24 @@ def effective_filters(
     return out
 
 
+def validate_token_bounds(filters: Dict[str, Any]) -> Optional[str]:
+    """Return an error message if ``min_prompt_tokens`` > ``max_prompt_tokens``, else ``None``."""
+    lo = filters.get("min_prompt_tokens")
+    hi = filters.get("max_prompt_tokens")
+    if lo is None or hi is None:
+        return None
+    try:
+        lo_i, hi_i = int(lo), int(hi)
+    except (TypeError, ValueError):
+        return None
+    if lo_i > hi_i:
+        return (
+            f"Invalid filter range: min_prompt_tokens ({lo_i}) cannot be greater than "
+            f"max_prompt_tokens ({hi_i})."
+        )
+    return None
+
+
 def load_manifest_df(path: str) -> pd.DataFrame:
     """Load manifest JSON (array of examples) into a DataFrame with ``id`` and ``metadata``."""
     with open(path, "r", encoding="utf-8") as f:
@@ -111,6 +129,13 @@ def apply_prediction_filters(
 
     m = manifest_df[["id", "metadata"]].copy()
     merged = out.merge(m, left_on="example_id", right_on="id", how="left")
+
+    unmatched = int(merged["metadata"].isna().sum())
+    if unmatched > 0:
+        warnings.append(
+            f"{unmatched} prediction row(s) had no matching manifest id and were excluded "
+            "from compression-active filtering."
+        )
 
     def _is_compression_active(meta: Any) -> bool:
         if meta is None or (isinstance(meta, float) and pd.isna(meta)):
@@ -190,8 +215,20 @@ def build_caveats_section(provenance: Dict[str, Any], run_config: Dict[str, Any]
             bullets.append(f"Run metadata includes **`{key}`**; method assumptions may differ from the default harness.")
 
     af = run_config.get(ANALYSIS_FILTERS_KEY)
-    if isinstance(af, dict) and af:
-        bullets.append("**analysis_filters** were applied for this report; subsets may differ from the full run.")
+    if isinstance(af, dict) and af.get("compression_active_only"):
+        bullets.append(
+            "**compression_active_only** narrows which rows are analyzed (manifest metadata); "
+            "that is **analysis scope**, not evidence of a causal speedup or native KV execution in this repo."
+        )
+    elif (
+        isinstance(af, dict)
+        and af
+        and provenance.get("run_source") == "imported"
+        and (af.get("min_prompt_tokens") is not None or af.get("max_prompt_tokens") is not None)
+    ):
+        bullets.append(
+            "**analysis_filters** (token bounds) were applied for this report; binned metrics reflect the filtered subset only."
+        )
 
     if not bullets:
         return None
@@ -203,9 +240,11 @@ def build_caveats_section(provenance: Dict[str, Any], run_config: Dict[str, Any]
 def build_metrics_interpretation_note(
     provenance: Dict[str, Any],
     run_config: Dict[str, Any],
+    effective_filters: Optional[Dict[str, Any]] = None,
 ) -> str:
     """Fixed metrics interpretation: latency vs throughput; optional batch metadata."""
     lines: List[str] = []
+    eff = effective_filters or {}
     lines.append(
         "- **`latency_ms`** in the database is **per-request wall time** (milliseconds), "
         "whether recorded by the in-repo runner or imported from an artifact."
@@ -214,6 +253,11 @@ def build_metrics_interpretation_note(
         "- **Throughput** (examples per second, batch scheduling) is **not** stored per row. "
         "**Do not** treat the mean of `latency_ms` as throughput or batch rate."
     )
+    if eff.get("compression_active_only"):
+        lines.append(
+            "- **`compression_active_only`** (with a manifest) limits which examples are aggregated; "
+            "use it as **analysis scope**, not as proof that compression caused faster or slower wall-clock behavior."
+        )
     bs = run_config.get("batch_size")
     tw = run_config.get("total_wall_clock_s")
     if isinstance(bs, (int, float)) and isinstance(tw, (int, float)) and tw > 0:

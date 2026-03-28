@@ -59,6 +59,26 @@ class ProfilePhase4ReportTests(unittest.TestCase):
         self.assertIn("## Analysis warnings", md)
         self.assertIn("compression_active_only", md)
 
+    def test_generate_markdown_without_extras_backward_compatible(self):
+        cp = CliffProfiler()
+        bins_df = self._minimal_bins_df()
+        cliff_data = cp.detect_cliff(bins_df)
+        md = cp.generate_markdown_report(
+            "internal_run",
+            bins_df,
+            cliff_data,
+            provenance={
+                "run_source": "internal",
+                "external_label": None,
+                "config": "{}",
+            },
+            extras=None,
+        )
+        self.assertIn("ContextCliff Report", md)
+        self.assertIn("## Executive Summary", md)
+        self.assertNotIn("### Metrics interpretation", md)
+        self.assertIn("run_source=`internal`", md)
+
     def test_positional_in_report(self):
         cp = CliffProfiler()
         bins_df = self._minimal_bins_df()
