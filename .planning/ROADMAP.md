@@ -61,7 +61,7 @@
 2. Expected degradation direction is documented (what should worsen as length/burial increases).
 3. Data loads through the existing prepare path without new CLI commands.
 
-**Plans:** TBD (`/gsd-plan-phase 7`)
+**Plans:** [`07-01-PLAN.md`](phases/07-controlled-dataset/07-01-PLAN.md) (`/gsd-execute-phase 7`)
 
 **UI hint:** no
 
