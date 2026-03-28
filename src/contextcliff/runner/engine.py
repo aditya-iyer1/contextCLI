@@ -1,9 +1,15 @@
+"""Evaluation runner: loads manifest examples and invokes a ``ModelClient``.
 
+Supported clients are the OpenAI HTTP API (``OpenAIClient``) and ``MockClient`` for
+dry runs. This layer does not implement local key-value cache compression, vLLM-style
+engines, or compression budget flags.
+"""
+
+import json
 import logging
 import time
-import json
-from typing import List, Optional
 from dataclasses import asdict
+from typing import List, Optional
 
 from contextcliff.data.formats import Example, Prediction, EvalRecord
 from contextcliff.models.client import ModelClient
@@ -13,9 +19,34 @@ from contextcliff.runner.state import StateManager
 
 from contextcliff.eval.metrics import evaluate_example
 
+class MockClient(ModelClient):
+    """Mock client for testing."""
+    def __init__(self, model_name="mock"):
+        self.last_usage = {}
+
+    def generate(self, prompt: str, **kwargs) -> str:
+        # Return a dummy answer
+        # rough token count
+        n_tokens = len(prompt.split())
+        self.last_usage = {
+            "prompt_tokens": n_tokens, 
+            "completion_tokens": 10, 
+            "total_tokens": n_tokens + 10
+        }
+        return "Answer"
+
+    def get_token_usage(self):
+        return self.last_usage
+    def cost_estimate(self, prompt_tokens: int, max_completion_tokens: int) -> float:
+        return 0.0
+
 class Runner:
-    """Orchestrates the evaluation process."""
-    
+    """Load ``manifest.json``, run generation via API or ``mock``, write predictions to SQLite.
+
+    No compression hooks or alternate local runtimes—only ``ModelClient`` backends
+    selected in ``__init__``.
+    """
+
     def __init__(self, manifest_path: str, model_name: str, run_id: str, db_path: str = "state.db"):
         self.manifest_path = manifest_path
         self.model_name = model_name
@@ -27,6 +58,8 @@ class Runner:
         # Model Factory
         if "gpt" in model_name:
             self.client = OpenAIClient(model_name)
+        elif model_name == "mock":
+            self.client = MockClient()
         else:
             raise NotImplementedError("Only OpenAI supported in Phase 1")
             
@@ -46,6 +79,10 @@ class Runner:
 
     def run(self):
         """Execute the run loop."""
+        self.state.register_internal_run(
+            self.run_id,
+            config={"model_name": self.model_name, "manifest_path": self.manifest_path},
+        )
         cost = self.check_cost()
         print(f"Starting run {self.run_id} with {len(self.examples)} examples.")
         print(f"Estimated Cost: ${cost:.2f} (Confirm with user in CLI if > threshold)")
@@ -85,6 +122,29 @@ class Runner:
                 
             except Exception as e:
                 print(f"Failed {example.id}: {e}")
+                err_type = "GenericError"
+                if "context_length_exceeded" in str(e) or "maximum context length" in str(e):
+                    err_type = "ContextLengthExceeded"
+                elif "Rate limit" in str(e):
+                    err_type = "RateLimitError" # Should be handled by retry, but if fails
+                
+                # Create a failure prediction record
+                pred = Prediction(
+                     example_id=example.id,
+                     raw_output="",
+                     latency_ms=0.0,
+                     usage={},
+                     parsed_output=f"{err_type}: {str(e)}"
+                )
+                # Zero metrics for failure
+                metrics = EvalRecord(
+                    example_id=example.id,
+                    context_tokens=example.context_tokens,
+                    f1_score=0.0,
+                    em_score=0.0,
+                    failure_type=err_type
+                )
+                self.state.save_prediction(self.run_id, example.id, pred, metrics)
                 continue
 
         print("Run complete.")
