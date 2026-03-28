@@ -23,7 +23,7 @@ Scope is the **Omega reset** (architecture reset milestone) only—no feature ex
 
 ### Import
 
-- [ ] **IMP-01**: User can **import** an external artifact (format defined in implementation) via CLI; stored predictions/runs are **persisted in SQLite** and **retrievably labeled** as imported/external.
+- [x] **IMP-01**: User can **import** an external artifact (format defined in implementation) via CLI; stored predictions/runs are **persisted in SQLite** and **retrievably labeled** as imported/external.
 
 ### Analysis & reporting
 
@@ -57,7 +57,7 @@ None for this milestone. Deferred work (e.g. richer compare UI, extra datasets) 
 | DOC-02 | Phase 1 | Pending |
 | RUN-01 | Phase 1 | Pending |
 | STA-01 | Phase 2 | Complete |
-| IMP-01 | Phase 3 | Pending |
+| IMP-01 | Phase 3 | Complete |
 | ANA-01 | Phase 4 | Pending |
 | ANA-02 | Phase 4 | Pending |
 | ANA-03 | Phase 4 | Pending |
@@ -69,4 +69,4 @@ None for this milestone. Deferred work (e.g. richer compare UI, extra datasets) 
 
 ---
 *Requirements defined: 2026-03-27*  
-*Last updated: 2026-03-28 — STA-01 satisfied (Phase 2 complete).*
+*Last updated: 2026-03-28 — IMP-01 satisfied (Phase 3 complete).*

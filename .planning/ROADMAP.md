@@ -8,7 +8,7 @@ Five **coarse** phases follow the **execution order** in `PROJECT.md`: strip mis
 
 - [x] **Phase 1: Deprecate docs & API contract** — Remove or deprecate misleading KV-runtime narrative; canonical “API/mock only + import” story; verify CLI/runner surface (DOC-01, DOC-02, RUN-01).
 - [x] **Phase 2: Run provenance in SQLite** — Schema/migration for internal vs imported runs (STA-01). *(2026-03-28)*
-- [ ] **Phase 3: External import bridge** — CLI + persistence path for labeled imports (IMP-01).
+- [x] **Phase 3: External import bridge** — CLI + persistence path for labeled imports (IMP-01). *(2026-03-28)*
 - [ ] **Phase 4: Analysis & reporting** — Filtering, caveats, positional diagnostics, latency vs throughput (ANA-01–ANA-04).
 - [ ] **Phase 5: Dependencies & codebase map** — `python-dotenv` declaration if needed; refresh `.planning/codebase/*` (DEP-01, DOC-03).
 
@@ -74,9 +74,13 @@ Plans:
 1. A CLI entry imports a defined artifact into SQLite with mandatory external labeling.
 2. Imported data can be consumed by the same reporting path as internal runs (with labels visible).
 
-**Plans:** TBD
+**Plans:** 1 plan (03-01)
 
 **UI hint:** no
+
+Plans:
+
+- [x] **03-01:** JSON v1 parser, `contextcliff import`, `import_external_run`, report provenance line (see `03-01-PLAN.md`, `03-01-SUMMARY.md`).
 
 ---
 
@@ -127,7 +131,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Deprecate docs & API contract | 1/1 | Complete | 2026-03-28 |
 | 2. Run provenance in SQLite | 1/1 | Complete | 2026-03-28 |
-| 3. External import bridge | — | Not started | — |
+| 3. External import bridge | 1/1 | Complete | 2026-03-28 |
 | 4. Analysis & reporting | — | Not started | — |
 | 5. Dependencies & codebase map | — | Not started | — |
 

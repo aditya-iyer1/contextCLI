@@ -14,7 +14,7 @@
 
 Existing codebase capabilities (see `.planning/codebase/ARCHITECTURE.md`, `STACK.md`):
 
-- ✓ **CLI pipeline** — `prepare` → `run` → `profile` (`src/contextcliff/cli/main.py`): manifest generation, batched inference, markdown cliff reports.
+- ✓ **CLI pipeline** — `prepare` → `run` → `import` → `profile` (`src/contextcliff/cli/main.py`): manifest generation, batched inference, JSON artifact import, markdown cliff reports.
 - ✓ **SQLite experiment store** — predictions and metrics in `state.db` via `StateManager` (`src/contextcliff/runner/state.py`); resume by skipping completed example IDs.
 - ✓ **API-path execution** — `OpenAIClient` + `ModelClient` abstraction (`src/contextcliff/models/`); `mock` model for dry runs (`src/contextcliff/runner/engine.py`).
 - ✓ **Scoring** — token F1 and exact match, best-over-gold-answers (`src/contextcliff/eval/metrics.py`).
@@ -22,6 +22,7 @@ Existing codebase capabilities (see `.planning/codebase/ARCHITECTURE.md`, `STACK
 - ✓ **Analysis & report** — length binning (`analysis/binning.py`), cliff heuristics and markdown report (`analysis/cliff.py`).
 - ✓ **Data layer** — HF NarrativeQA adapter, NLDA-style quantile sampling (`data/sampler.py`, `data/adapters/narrative_qa.py`).
 - ✓ **Run provenance (STA-01)** — `runs.run_source` / `external_label` / `artifact_ref`, migration + backfill, internal registration in `Runner.run()` (`Phase 2`, 2026-03-28).
+- ✓ **Import bridge (IMP-01)** — `contextcliff import` + JSON `schema_version` 1, `import_external_run`, collision rules vs internal runs, minimal provenance line in cliff report (`Phase 3`, 2026-03-28).
 
 ### Active
 
@@ -29,7 +30,7 @@ Architecture reset and harness clarity (this milestone):
 
 - [ ] **Remove or deprecate misleading KV-runtime story** — docs (and any stray config) that imply in-repo SnapKV / PyramidKV / KVCache-Factory execution or fake `--kv_budget` on API backends; align README/docs with **API-only** execution in this repo.
 - [ ] **Relock runner to engine-agnostic API execution** — single clear path: manifest → `ModelClient.generate` → metrics → SQLite; no mixed “local compression runtime vs API” equivalence claims in code paths.
-- [ ] **External artifact import bridge** — ingest results from out-of-repo KV-compression (or other) runs into the same schema/reporting pipeline; imported runs **clearly flagged** as external/imported (metadata, labels, or dedicated fields).
+- [x] **External artifact import bridge** — satisfied by Phase 3 (`import` CLI + SQLite `imported` rows + report header); further UX belongs in later phases.
 - [ ] **Preserve analysis lessons from the KV study** in analysis/reporting:
   - Compression-active filtering / short-document suppression where appropriate.
   - Method-fidelity caveats (what the numbers do and do not imply).
@@ -98,4 +99,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state  
 
 ---
-*Last updated: 2026-03-28 — Phase 2 (STA-01) validated; Validated section updated.*
+*Last updated: 2026-03-28 — Phase 3 (IMP-01) validated; Validated / Active updated.*
