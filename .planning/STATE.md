@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Signal validation (Alpha)
-status: phase 6 context gathered
-stopped_at: Phase 6 context gathered
-last_updated: "2026-03-28T05:45:41.850Z"
-last_activity: 2026-03-27 — Phase 6 discuss-phase; 06-CONTEXT.md written
+status: "Phase 6 shipped — PR #5 (open)"
+stopped_at: PR #5 opened — merge to main when reviewed
+last_updated: "2026-03-28T05:47:11.589Z"
+last_activity: 2026-03-27
 progress:
   total_phases: 7
   completed_phases: 0
@@ -25,10 +25,10 @@ See: `.planning/PROJECT.md` (updated 2026-03-27)
 
 ## Current Position
 
-Phase: **6 — Signal contract** (definition **complete**; execution plans not started)  
+Phase: **6 — Signal contract** — **PR** [#5](https://github.com/aditya-iyer1/contextCLI/pull/5) (`gsd/phase-06-signal-contract` → `main`)  
 Plan: —  
-Status: SIG-01 canonical spec locked — next: Phase 7 dataset (or `/gsd-plan-phase 6` for implementation tasks only)  
-Last activity: 2026-03-27 — [SIGNAL-SPEC-ALPHA-v1.1.md](SIGNAL-SPEC-ALPHA-v1.1.md) locked (L1–L3)
+Status: Shipped to PR; merge after review; then continue **Phase 7** (controlled dataset)  
+Last activity: 2026-03-27 — `/gsd-ship 6`
 
 ## Performance Metrics
 
@@ -58,6 +58,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-28T05:45:41.835Z
-Stopped at: Phase 6 context gathered
-Resume: `.planning/phases/06-signal-contract/06-CONTEXT.md` — `/gsd-plan-phase 6` (optional: spec-compliance checklist) or `/gsd-discuss-phase 7` for dataset phase
+Last session: 2026-03-28  
+Stopped at: **PR #5** opened — [review and merge](https://github.com/aditya-iyer1/contextCLI/pull/5)  
+Resume: After merge, `git checkout main && git pull`; then `/gsd-discuss-phase 7` or `/gsd-plan-phase 7` for **SIG-02**
