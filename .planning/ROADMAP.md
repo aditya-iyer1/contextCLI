@@ -6,7 +6,7 @@ Five **coarse** phases follow the **execution order** in `PROJECT.md`: strip mis
 
 ## Phases
 
-- [ ] **Phase 1: Deprecate docs & API contract** — Remove or deprecate misleading KV-runtime narrative; canonical “API/mock only + import” story; verify CLI/runner surface (DOC-01, DOC-02, RUN-01).
+- [x] **Phase 1: Deprecate docs & API contract** — Remove or deprecate misleading KV-runtime narrative; canonical “API/mock only + import” story; verify CLI/runner surface (DOC-01, DOC-02, RUN-01).
 - [ ] **Phase 2: Run provenance in SQLite** — Schema/migration for internal vs imported runs (STA-01).
 - [ ] **Phase 3: External import bridge** — CLI + persistence path for labeled imports (IMP-01).
 - [ ] **Phase 4: Analysis & reporting** — Filtering, caveats, positional diagnostics, latency vs throughput (ANA-01–ANA-04).
@@ -34,7 +34,7 @@ Five **coarse** phases follow the **execution order** in `PROJECT.md`: strip mis
 
 Plans:
 
-- [ ] **01-01:** Audit and edit docs; add canonical architecture note; verify CLI/runner surface (see `01-01-PLAN.md`).
+- [x] **01-01:** Audit and edit docs; add canonical architecture note; verify CLI/runner surface (see `01-01-PLAN.md`).
 
 ---
 
@@ -121,7 +121,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Deprecate docs & API contract | 0/1 | Not started | — |
+| 1. Deprecate docs & API contract | 1/1 | Complete | 2026-03-28 |
 | 2. Run provenance in SQLite | — | Not started | — |
 | 3. External import bridge | — | Not started | — |
 | 4. Analysis & reporting | — | Not started | — |
