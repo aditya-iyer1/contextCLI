@@ -171,3 +171,111 @@ class StateManager:
         rows = [dict(r) for r in cursor.fetchall()]
         conn.close()
         return rows
+
+    def get_run_provenance(self, run_id: str) -> Optional[Dict[str, Any]]:
+        """Return ``runs`` row fields for reporting, or ``None`` if no such run."""
+        conn = sqlite3.connect(self.db_path)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT run_id, run_source, external_label, artifact_ref, config
+            FROM runs WHERE run_id = ?
+            """,
+            (run_id,),
+        )
+        row = cursor.fetchone()
+        conn.close()
+        if row is None:
+            return None
+        return dict(row)
+
+    def import_external_run(
+        self,
+        run_id: str,
+        label: str,
+        artifact_ref: Optional[str],
+        run_metadata: Dict[str, Any],
+        prediction_rows: List[Dict[str, Any]],
+        *,
+        replace: bool = False,
+    ) -> None:
+        """Insert or replace an **imported** run and its predictions.
+
+        Never overwrites ``run_source='internal'``. See Phase 3 CONTEXT (IMP-01).
+        """
+        if not run_id or not str(run_id).strip():
+            raise ValueError("run_id must be non-empty")
+        if not label or not str(label).strip():
+            raise ValueError("label must be non-empty")
+
+        config_json = json.dumps(run_metadata)
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT run_source FROM runs WHERE run_id = ?", (run_id,))
+            existing = cursor.fetchone()
+
+            if existing is None:
+                cursor.execute(
+                    """
+                    INSERT INTO runs (run_id, timestamp, config, run_source, external_label, artifact_ref)
+                    VALUES (?, CURRENT_TIMESTAMP, ?, 'imported', ?, ?)
+                    """,
+                    (run_id, config_json, label, artifact_ref),
+                )
+                self._insert_prediction_rows(cursor, run_id, prediction_rows)
+            else:
+                (src,) = existing
+                if src == "internal":
+                    raise ValueError(
+                        f"run_id {run_id!r} is an internal harness run; import cannot overwrite it."
+                    )
+                if src == "imported":
+                    if not replace:
+                        raise ValueError(
+                            f"run_id {run_id!r} already exists as imported; use --replace to overwrite."
+                        )
+                    cursor.execute("DELETE FROM predictions WHERE run_id = ?", (run_id,))
+                    cursor.execute(
+                        """
+                        UPDATE runs SET timestamp = CURRENT_TIMESTAMP, config = ?,
+                            external_label = ?, artifact_ref = ?
+                        WHERE run_id = ?
+                        """,
+                        (config_json, label, artifact_ref, run_id),
+                    )
+                    self._insert_prediction_rows(cursor, run_id, prediction_rows)
+                else:
+                    raise ValueError(f"run_id {run_id!r} has unexpected run_source={src!r}")
+
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+    def _insert_prediction_rows(
+        self, cursor: sqlite3.Cursor, run_id: str, prediction_rows: List[Dict[str, Any]]
+    ) -> None:
+        for pr in prediction_rows:
+            cursor.execute(
+                """
+                INSERT INTO predictions (
+                    run_id, example_id, raw_output, prompt_tokens, completion_tokens,
+                    latency_ms, error, f1_score, em_score
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    run_id,
+                    pr["example_id"],
+                    pr["raw_output"],
+                    pr["prompt_tokens"],
+                    pr["completion_tokens"],
+                    pr["latency_ms"],
+                    pr["error"],
+                    pr["f1_score"],
+                    pr["em_score"],
+                ),
+            )

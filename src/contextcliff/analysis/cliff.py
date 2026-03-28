@@ -1,6 +1,6 @@
 
 import pandas as pd
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Optional
 
 class CliffProfiler:
     """Identifies the 'Cliff' and Safe Operating Cap."""
@@ -76,11 +76,24 @@ class CliffProfiler:
             
         return results
 
-    def generate_markdown_report(self, run_id: str, bins_df: pd.DataFrame, cliff_data: Dict[str, Any]) -> str:
+    def generate_markdown_report(
+        self,
+        run_id: str,
+        bins_df: pd.DataFrame,
+        cliff_data: Dict[str, Any],
+        provenance: Optional[Dict[str, Any]] = None,
+    ) -> str:
         """Generates the markdown table and summary."""
         
         md = f"# ContextCliff Report: Run {run_id}\n\n"
-        
+        if provenance:
+            rs = provenance.get("run_source")
+            el = provenance.get("external_label")
+            if rs is not None or el is not None:
+                rs_s = str(rs) if rs is not None else ""
+                el_s = str(el).replace("\n", " ").replace("`", "'") if el is not None else ""
+                md += f"**Provenance:** run_source=`{rs_s}` · external_label=`{el_s}`\n\n"
+
         # Summary
         md += "## Executive Summary\n"
         md += f"- **Safe Operating Cap**: {int(cliff_data['safe_cap_tokens'])} tokens\n"

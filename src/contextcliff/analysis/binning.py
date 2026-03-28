@@ -16,8 +16,11 @@ class ResultBinner:
         # We need context_tokens. In current schema, predictions table has 'prompt_tokens'
         # which is roughly context tokens (plus query). 
         # Alternatively, join with manifest info if needed, but prompt_tokens is accurate for actual run.
-        query = f"SELECT * FROM predictions WHERE run_id = '{run_id}'"
-        df = pd.read_sql_query(query, conn)
+        df = pd.read_sql_query(
+            "SELECT * FROM predictions WHERE run_id = ?",
+            conn,
+            params=(run_id,),
+        )
         conn.close()
         
         # Ensure numeric types
