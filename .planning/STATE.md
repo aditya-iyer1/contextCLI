@@ -27,8 +27,8 @@ See: `.planning/PROJECT.md` (updated 2026-03-28)
 ## Current Position
 
 Phase: **4** of **5** (analysis-reporting)  
-Plan: **not started** (discuss → plan Phase 4)  
-Status: **Ready to plan** next phase  
+Plan: **04-01** (`04-01-PLAN.md`) — ready to execute  
+Status: **Ready to execute** Phase 4  
 Last activity: 2026-03-28
 
 Progress: [██████░░░░] ~60%
@@ -63,4 +63,4 @@ None.
 
 Last session: 2026-03-28T04:27:58.746Z
 Stopped at: Phase 4 plan 04-01 ready
-Resume: `/gsd-plan-phase 4` (context in `04-CONTEXT.md`; revise as needed before planning)
+Resume: `/gsd-execute-phase 4` or manual implementation from `04-01-PLAN.md`
