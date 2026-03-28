@@ -1,38 +1,33 @@
 # Phase 7: Controlled dataset - Discussion Log
 
-> **Audit trail only.** Decisions live in `07-CONTEXT.md`.
+> **Audit trail only.** Decisions live in `07-CONTEXT.md` and [`.planning/DATASET-SIG02.md`](../../DATASET-SIG02.md).
 
 **Date:** 2026-03-28  
 **Phase:** 7 — Controlled dataset  
-**Areas discussed:** Dataset wiring, content model, reproducibility, metadata (synthesized — no interactive menu)
+**Areas discussed:** User-confirmed locks (2026-03-28)
 
 ---
 
-## Session mode
+## User selections
 
-| Aspect | Outcome |
-|--------|---------|
-| **Gray-area selection** | Skipped — roadmap + **SIG-02** + **SIG-01** constrain choices; decisions recorded as **D-01–D-09** in CONTEXT. |
-| **Todo match** | 0 matches. |
+| # | Topic | Choice |
+|---|--------|--------|
+| 1 | Dataset slug | **Keep `alpha_synthetic`** |
+| 2 | Bin strategy | **Equal n per bin**; bins **defined by the synthetic generator** — **not** post-hoc quantiles |
+| 3 | Burial | **Needle-offset emphasis**; filler only supports realizing that knob |
+| 4 | Fixtures | **Procedural first**; **no** committed golden JSONL yet — add only if determinism questionable or tests need snapshots |
 
----
+## Additional locks (planning)
 
-## Resolved topics (mapped to CONTEXT)
-
-| Topic | Resolution |
-|-------|------------|
-| CLI surface | Extend **`--dataset alpha_synthetic`** only; no new subcommands. |
-| Adapter | New **`AlphaSyntheticAdapter`** + `balance_samples` branch. |
-| Burial / length | Monotonic bins + systematic burial; documented in **`.planning/DATASET-SIG02.md`** (to be created in execution). |
-| Metric | **EM** only for Alpha primary scoring per signal spec. |
-| Reproducibility | Seeded generation + optional golden JSONL for tests. |
+- Answer **always present** in context.
+- **One** task only: **extractive QA**.
+- **One** seedable generator.
+- **Monotonic length growth** by construction.
+- **Expected outcome** documented in **`.planning/DATASET-SIG02.md`** before implementation is considered done.
 
 ---
 
-## Claude's Discretion
+## Artifacts updated
 
-- Exact filler templates, **K**, **n_per_bin** — see CONTEXT **Claude's Discretion**.
-
-## Deferred ideas
-
-- NarrativeQA as Alpha control — out of scope for SIG-02 (see CONTEXT deferred).
+- [`07-CONTEXT.md`](07-CONTEXT.md) — decisions **D-01–D-13**
+- [`.planning/DATASET-SIG02.md`](../../DATASET-SIG02.md) — normative design contract + completion gate
