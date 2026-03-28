@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Signal validation (Alpha)
-status: "Phase 7 discuss complete — context captured"
-stopped_at: Phase 7 context gathered — SIG-02
+status: "Phase 7 complete — SIG-02 shipped"
+stopped_at: Phase 8 — baseline API validation (next)
 last_updated: "2026-03-28T12:00:00.000Z"
 last_activity: 2026-03-28
 progress:
   total_phases: 7
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  completed_phases: 1
+  total_plans: 1
+  completed_plans: 1
 ---
 
 # Project State
@@ -25,10 +25,10 @@ See: `.planning/PROJECT.md` (updated 2026-03-27)
 
 ## Current Position
 
-Phase: **7 — Controlled dataset** — **discuss complete**  
-Plan: —  
-Status: Plan **07-01** ready — **`/gsd-execute-phase 7`** ([`07-01-PLAN.md`](phases/07-controlled-dataset/07-01-PLAN.md))  
-Last activity: 2026-03-28 — `/gsd-plan-phase 7` (research skipped; checker skipped by orchestrator — plan self-verified)
+Phase: **8 — Baseline API validation** — not started  
+Plan: — (`/gsd-plan-phase 8`)  
+Status: Phase **7** complete — [`07-01-SUMMARY.md`](phases/07-controlled-dataset/07-01-SUMMARY.md)  
+Last activity: 2026-03-28
 
 ## Performance Metrics
 
@@ -59,5 +59,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-28  
-Stopped at: **Phase 7** — [`07-CONTEXT.md`](phases/07-controlled-dataset/07-CONTEXT.md) ready  
-Resume: **`/gsd-plan-phase 7`** (implement `alpha_synthetic` adapter + `DATASET-SIG02.md` per context)
+Stopped at: **Phase 8** — discuss / plan baseline API validation (SIG-03)  
+Resume: **`/gsd-discuss-phase 8`** or **`/gsd-plan-phase 8`**
