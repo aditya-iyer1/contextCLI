@@ -20,6 +20,31 @@ class ImportBridgeTests(unittest.TestCase):
         self.assertEqual(len(rows), 2)
         self.assertEqual(rows[0]["example_id"], "e1")
 
+    def test_parse_null_numerics(self):
+        raw = {
+            "schema_version": "1",
+            "run_metadata": {},
+            "predictions": [
+                {
+                    "example_id": "x",
+                    "raw_output": "y",
+                    "prompt_tokens": None,
+                    "completion_tokens": None,
+                    "latency_ms": None,
+                    "f1_score": None,
+                    "em_score": None,
+                    "error": None,
+                }
+            ],
+        }
+        _, rows = parse_artifact_v1(raw)
+        r = rows[0]
+        self.assertEqual(r["prompt_tokens"], 0)
+        self.assertEqual(r["completion_tokens"], 0)
+        self.assertEqual(r["latency_ms"], 0.0)
+        self.assertEqual(r["f1_score"], 0.0)
+        self.assertEqual(r["em_score"], 0.0)
+
     def test_import_and_replace(self):
         fd, db = tempfile.mkstemp(suffix=".db")
         os.close(fd)

@@ -30,6 +30,20 @@ from typing import Any, Dict, List, Tuple
 SUPPORTED_SCHEMA_VERSION = "1"
 
 
+def _json_int(value: Any, default: int = 0) -> int:
+    """JSON ``null`` or absent key → ``default``; otherwise ``int(value)``."""
+    if value is None:
+        return default
+    return int(value)
+
+
+def _json_float(value: Any, default: float = 0.0) -> float:
+    """JSON ``null`` or absent key → ``default``; otherwise ``float(value)``."""
+    if value is None:
+        return default
+    return float(value)
+
+
 def parse_artifact_v1(raw: Dict[str, Any]) -> Tuple[Dict[str, Any], List[Dict[str, Any]]]:
     """Validate and normalize a v1 artifact. Returns ``(run_metadata, prediction_rows)``."""
     ver = raw.get("schema_version")
@@ -64,12 +78,12 @@ def parse_artifact_v1(raw: Dict[str, Any]) -> Tuple[Dict[str, Any], List[Dict[st
             {
                 "example_id": str(ex),
                 "raw_output": str(p.get("raw_output")),
-                "prompt_tokens": int(p.get("prompt_tokens", 0)),
-                "completion_tokens": int(p.get("completion_tokens", 0)),
-                "latency_ms": float(p.get("latency_ms", 0.0)),
+                "prompt_tokens": _json_int(p.get("prompt_tokens"), 0),
+                "completion_tokens": _json_int(p.get("completion_tokens"), 0),
+                "latency_ms": _json_float(p.get("latency_ms"), 0.0),
                 "error": err,
-                "f1_score": float(p.get("f1_score", 0.0)),
-                "em_score": float(p.get("em_score", 0.0)),
+                "f1_score": _json_float(p.get("f1_score"), 0.0),
+                "em_score": _json_float(p.get("em_score"), 0.0),
             }
         )
 
