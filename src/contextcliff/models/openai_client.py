@@ -3,10 +3,8 @@ import os
 import time
 from typing import Dict, Any, Optional
 from openai import OpenAI
-from dotenv import load_dotenv
 from .client import ModelClient
 
-load_dotenv()
 
 class OpenAIClient(ModelClient):
     """Client for OpenAI API models."""

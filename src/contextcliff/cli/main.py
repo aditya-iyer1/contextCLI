@@ -5,6 +5,12 @@ key-value cache compression flags or local inference engines in this package. Se
 ``docs/architecture.md`` for the execution model.
 """
 
+from dotenv import load_dotenv
+
+# CLI entry only: load optional .env before other imports read os.environ.
+# override=False (default): never replace vars already set in the environment.
+load_dotenv()
+
 import json
 import sys
 import time

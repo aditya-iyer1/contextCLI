@@ -13,13 +13,16 @@ contextCLI/
 ├── debug_db.py             # DB debugging helper
 ├── docs/                   # Design and architecture notes (blueprint, data layer, etc.)
 └── src/contextcliff/
-    ├── cli/main.py         # Click CLI: prepare, run, profile
+    ├── cli/main.py         # Click CLI: prepare, run, import, profile
     ├── data/
     │   ├── formats.py      # Example, Prediction, EvalRecord
     │   ├── sampler.py      # balance_samples → manifest.json
     │   └── adapters/
     │       ├── base.py     # BaseAdapter
     │       └── narrative_qa.py
+    ├── import_bridge/
+    │   ├── __init__.py
+    │   └── artifact_v1.py  # JSON schema_version 1 → parsed run payload
     ├── models/
     │   ├── client.py       # ModelClient ABC
     │   └── openai_client.py
@@ -29,14 +32,15 @@ contextCLI/
     ├── eval/metrics.py     # F1, EM, evaluate_example
     └── analysis/
         ├── binning.py      # ResultBinner
-        └── cliff.py      # CliffProfiler
+        ├── cliff.py        # CliffProfiler, ReportExtras
+        └── profile_report.py  # filters, manifest join, markdown fragments for profile
 ```
 
 ## Naming conventions
 
 - **Modules:** `snake_case` (`narrative_qa.py`, `openai_client.py`)
 - **Classes:** `PascalCase` (`Runner`, `NarrativeQAAdapter`, `CliffProfiler`)
-- **CLI commands:** `prepare`, `run`, `profile` on the `contextcliff` group
+- **CLI commands:** `prepare`, `run`, `import`, `profile` on the `contextcliff` group
 
 ## Important paths (by role)
 

@@ -2,8 +2,8 @@
 
 ## Formal test suite
 
-- **No `tests/` directory** and **no `pytest` / `unittest` discovery** wired in `pyproject.toml` in the current tree
-- Treat testing as **manual scripts and smoke flows** unless/until a framework is added
+- **`tests/`** package with **`unittest`** modules: `tests/test_import_bridge.py`, `tests/test_profile_report.py`, `tests/test_profile_phase4.py`
+- **Discovery:** from repo root, run **`uv run python -m unittest discover -s tests -p 'test_*.py'`** (or **`uv run python -m unittest`** with explicit module paths)
 
 ## Ad hoc scripts (repo root)
 
@@ -27,5 +27,5 @@
 
 ## Suggested direction (for future work)
 
-- Add `pytest`, factor `MockClient` to a test module, and add fixtures for tiny JSON manifests
-- Add regression tests for `evaluate_example`, `CliffProfiler.detect_cliff`, and `ResultBinner.bin_results` with small DataFrames
+- Add **`pytest`** as an optional runner, factor `MockClient` to a test module, and add fixtures for tiny JSON manifests
+- Add regression tests for `evaluate_example`, `CliffProfiler.detect_cliff`, and `ResultBinner.bin_results` with small DataFrames if not already covered

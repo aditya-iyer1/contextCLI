@@ -3,12 +3,10 @@ import os
 import tiktoken
 from typing import Iterator, Dict, Any
 from datasets import load_dataset
-from dotenv import load_dotenv
 
 from contextcliff.data.formats import Example
 from contextcliff.data.adapters.base import BaseAdapter
 
-load_dotenv()
 
 class NarrativeQAAdapter(BaseAdapter):
     """Adapter for NarrativeQA dataset from HuggingFace."""
