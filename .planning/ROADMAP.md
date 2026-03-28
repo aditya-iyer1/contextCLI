@@ -98,7 +98,7 @@ Plans:
 2. Positional diagnostics appear when data supports them.
 3. Latency and throughput are not conflated in generated markdown.
 
-**Plans:** TBD
+**Plans:** 1 plan (04-01)
 
 **UI hint:** no
 
@@ -132,7 +132,7 @@ Plans:
 | 1. Deprecate docs & API contract | 1/1 | Complete | 2026-03-28 |
 | 2. Run provenance in SQLite | 1/1 | Complete | 2026-03-28 |
 | 3. External import bridge | 1/1 | Complete | 2026-03-28 |
-| 4. Analysis & reporting | — | Not started | — |
+| 4. Analysis & reporting | 1/1 plan | Planned (not executed) | — |
 | 5. Dependencies & codebase map | — | Not started | — |
 
 ---
