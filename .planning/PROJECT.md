@@ -31,6 +31,8 @@
 
 **Alpha passes only if:** measurable degradation across length bins; stability under bootstrap / repeated runs; transition detection finds reproducible cliffs, not random spikes; outputs let a human say where performance breaks and where variance rises. **If the controlled dataset does not show expected signal, the harness fails Alpha.**
 
+**SIG-01 (Phase 6 — locked):** Canonical signal spec — [.planning/SIGNAL-SPEC-ALPHA-v1.1.md](SIGNAL-SPEC-ALPHA-v1.1.md). Immutable decisions: **L1** degradation = soft monotonic + CI separation; **L2** cliff = **Δ(score)** between adjacent bins; **L3** all CIs = **bootstrap** with one global **B** (fixed at first use). No dataset or code changes in Phase 6.
+
 ## Current state (v1.0)
 
 **Shipped:** 2026-03-28 — **Architecture reset (Omega)**. See [.planning/MILESTONES.md](MILESTONES.md) and tag **`v1.0`**.
@@ -56,7 +58,7 @@
 
 Signal validation (see `.planning/REQUIREMENTS.md`):
 
-- [ ] **SIG-01** — Canonical signal spec (variance, degradation, cliff; formulas and thresholds).
+- [x] **SIG-01** — Canonical signal spec locked — [SIGNAL-SPEC-ALPHA-v1.1.md](SIGNAL-SPEC-ALPHA-v1.1.md) (variance, degradation, cliff, formulas; code aligns in later phases).
 - [ ] **SIG-02** — Controlled synthetic dataset with expected degradation.
 - [ ] **SIG-03** — API baseline experiment across length bins.
 - [ ] **SIG-04** — Statistical robustness (bootstrap, bin comparisons, resample stability).
@@ -107,4 +109,4 @@ This document evolves at milestone boundaries.
 **After v1.0:** Use `/gsd-new-milestone` for requirements and roadmap; keep **DOC-01 / DOC-02 / RUN-01** visible until closed or explicitly deferred.
 
 ---
-*Last updated: 2026-03-27 — milestone v1.1 Signal validation (Alpha) started*
+*Last updated: 2026-03-27 — SIG-01 signal spec locked (Phase 6 definition)*

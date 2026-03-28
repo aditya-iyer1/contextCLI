@@ -2,7 +2,7 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Signal validation (Alpha)
-status: ready for phase 6
+status: phase 6 SIG-01 spec locked
 stopped_at: null
 last_updated: "2026-03-27T12:00:00.000Z"
 last_activity: 2026-03-27
@@ -26,10 +26,10 @@ See: `.planning/PROJECT.md` (updated 2026-03-27)
 
 ## Current Position
 
-Phase: **6 — Signal contract** (not started)  
+Phase: **6 — Signal contract** (definition **complete**; execution plans not started)  
 Plan: —  
-Status: Ready to discuss/plan  
-Last activity: 2026-03-27 — Milestone v1.1 roadmap created (phases 6–12)
+Status: SIG-01 canonical spec locked — next: Phase 7 dataset (or `/gsd-plan-phase 6` for implementation tasks only)  
+Last activity: 2026-03-27 — [SIGNAL-SPEC-ALPHA-v1.1.md](SIGNAL-SPEC-ALPHA-v1.1.md) locked (L1–L3)
 
 ## Performance Metrics
 

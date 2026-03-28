@@ -11,7 +11,7 @@
 
 ### Signal specification (SIG)
 
-- [ ] **SIG-01**: A **canonical signal spec** exists (doc + implementable definitions) that explicitly states: variance definitions across bins, runs, and methods; **degradation** definition; **transition/cliff** definition; formulas, thresholds, and what qualifies as a **real effect** (not noise).
+- [x] **SIG-01**: A **canonical signal spec** exists (doc + implementable definitions) that explicitly states: variance definitions across bins, runs, and methods; **degradation** definition; **transition/cliff** definition; formulas, thresholds, and what qualifies as a **real effect** (not noise). **Locked:** [.planning/SIGNAL-SPEC-ALPHA-v1.1.md](SIGNAL-SPEC-ALPHA-v1.1.md) (2026-03-27).
 
 ### Data & execution
 
@@ -69,7 +69,7 @@ If not blocking Alpha validity, leave unchecked and track as backlog.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SIG-01 | Phase 6 | Pending |
+| SIG-01 | Phase 6 | Locked (definition) |
 | SIG-02 | Phase 7 | Pending |
 | SIG-03 | Phase 8 | Pending |
 | SIG-04 | Phase 9 | Pending |
@@ -89,4 +89,4 @@ If not blocking Alpha validity, leave unchecked and track as backlog.
 
 ---
 *Requirements defined: 2026-03-27*  
-*Last updated: 2026-03-27 after `/gsd-new-milestone`*
+*Last updated: 2026-03-27 — SIG-01 locked (`SIGNAL-SPEC-ALPHA-v1.1.md`)*

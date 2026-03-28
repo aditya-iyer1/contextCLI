@@ -29,6 +29,8 @@
 
 **Goal:** Satisfy **SIG-01** — canonical signal spec (variance, degradation, cliff; formulas, thresholds, real-effect criteria).
 
+**Canonical artifact (locked):** [.planning/SIGNAL-SPEC-ALPHA-v1.1.md](SIGNAL-SPEC-ALPHA-v1.1.md) — **2026-03-27.** Decisions **L1–L3** are immutable for Alpha (degradation, Δ(score) cliff, bootstrap **B**).
+
 **Depends on:** Nothing (first phase of v1.1).
 
 **Requirements:** SIG-01
@@ -39,7 +41,7 @@
 2. Thresholds and “real effect” rules are stated clearly enough to implement and test.
 3. Spec is frozen (versioned or dated) before primary controlled runs in later phases.
 
-**Plans:** TBD (`/gsd-plan-phase 6`)
+**Plans:** Definition deliverable **complete**; optional `/gsd-plan-phase 6` only for tracing implementation work against the locked spec.
 
 **UI hint:** no
 
@@ -175,7 +177,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 6. Signal contract | 0/? | Not started | — |
+| 6. Signal contract | 0/? | Definition locked | 2026-03-27 (spec) |
 | 7. Controlled dataset | 0/? | Not started | — |
 | 8. Baseline API validation | 0/? | Not started | — |
 | 9. Statistical robustness | 0/? | Not started | — |
