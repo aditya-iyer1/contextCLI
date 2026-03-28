@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Signal validation (Alpha)
-status: defining requirements
+status: ready for phase 6
 stopped_at: null
 last_updated: "2026-03-27T12:00:00.000Z"
 last_activity: 2026-03-27
 progress:
-  total_phases: 0
+  total_phases: 7
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -26,10 +26,10 @@ See: `.planning/PROJECT.md` (updated 2026-03-27)
 
 ## Current Position
 
-Phase: Not started (defining requirements)  
+Phase: **6 — Signal contract** (not started)  
 Plan: —  
-Status: Defining requirements  
-Last activity: 2026-03-27 — Milestone v1.1 Signal validation (Alpha) started
+Status: Ready to discuss/plan  
+Last activity: 2026-03-27 — Milestone v1.1 roadmap created (phases 6–12)
 
 ## Performance Metrics
 
