@@ -87,4 +87,4 @@ Phase 7 implementation is **not** complete until:
 
 ### Implementation summary
 
-*To be filled when SIG-02 code merges.*
+The shipped generator lives in `src/contextcliff/data/alpha_synthetic_generator.py` with adapter `src/contextcliff/data/adapters/alpha_synthetic.py`. **Seed:** constant **`ALPHA_SIG02_SEED`** = **42** (passed through `prepare` / `_write_alpha_synthetic_manifest`). **K** (number of designed strata) is set by **`contextcliff prepare --dataset alpha_synthetic --bins K`**. **n per bin** defaults to **10** via **`N_PER_BIN_DEFAULT`** when using `prepare` (not overridden by CLI in Phase 7). Tokenization uses **tiktoken** encoding **`o200k_base`** with **`cl100k_base`** fallback. Metadata **`synthetic_version`** is **`sig02-v1`** for this spec revision.

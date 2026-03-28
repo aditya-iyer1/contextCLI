@@ -29,6 +29,7 @@ from contextcliff.analysis.profile_report import (
     parse_run_config,
     validate_token_bounds,
 )
+from contextcliff.data.alpha_synthetic_generator import N_PER_BIN_DEFAULT
 from contextcliff.data.sampler import balance_samples
 from contextcliff.import_bridge.artifact_v1 import parse_artifact_v1
 from contextcliff.runner.engine import Runner
@@ -53,11 +54,23 @@ def main():
     default="narrativeqa",
     help="The HF data to ingest",
 )
-@click.option("--bins", default=10, help="Number of quantile bins")
+@click.option(
+    "--bins",
+    default=10,
+    help="For narrativeqa: quantile bin count / samples per bin (existing behavior). "
+    "For alpha_synthetic: K designed strata (bins).",
+)
 def prepare(dataset, bins):
     """Build a balanced manifest from the dataset (API/tokenization for sampling; not model inference)."""
     click.echo(f"Preparing {dataset} into {bins} bins")
-    balance_samples(bins)
+    if dataset == "alpha_synthetic":
+        balance_samples(
+            n_per_bin=N_PER_BIN_DEFAULT,
+            dataset_name=dataset,
+            n_bins=bins,
+        )
+    else:
+        balance_samples(n_per_bin=bins, dataset_name=dataset)
 
 
 @main.command()
