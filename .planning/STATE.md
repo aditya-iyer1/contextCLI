@@ -27,8 +27,8 @@ See: `.planning/PROJECT.md` (updated 2026-03-27)
 
 Phase: **7 — Controlled dataset** — **discuss complete**  
 Plan: —  
-Status: Ready for **`/gsd-plan-phase 7`** (**SIG-02**) — design contract [`.planning/DATASET-SIG02.md`](DATASET-SIG02.md) + locked decisions in [`07-CONTEXT.md`](phases/07-controlled-dataset/07-CONTEXT.md)  
-Last activity: 2026-03-28 — Phase 7 discuss revised (bin/burial/fixture locks)
+Status: Plan **07-01** ready — **`/gsd-execute-phase 7`** ([`07-01-PLAN.md`](phases/07-controlled-dataset/07-01-PLAN.md))  
+Last activity: 2026-03-28 — `/gsd-plan-phase 7` (research skipped; checker skipped by orchestrator — plan self-verified)
 
 ## Performance Metrics
 
