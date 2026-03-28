@@ -63,4 +63,4 @@ None.
 
 Last session: 2026-03-28T04:26:01.216Z
 Stopped at: Phase 4 context gathered
-Resume: `/gsd-discuss-phase 4` or `/gsd-plan-phase 4`
+Resume: `/gsd-plan-phase 4` (context in `04-CONTEXT.md`; revise as needed before planning)
