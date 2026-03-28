@@ -1,9 +1,9 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.0
-milestone_name: milestone
-status: in_progress
-stopped_at: "Phase 5 shipped — PR #4"
+milestone_name: Architecture reset (Omega)
+status: v1.0 milestone complete
+stopped_at: "v1.0 shipped and archived — see MILESTONES.md"
 last_updated: "2026-03-28T12:00:00.000Z"
 last_activity: 2026-03-28
 progress:
@@ -22,20 +22,19 @@ See: `.planning/PROJECT.md` (updated 2026-03-28)
 
 **Core value:** Trustworthy, comparable long-context evals—API in-repo; external compression via import and explicit labeling.
 
-**Current focus:** Omega roadmap Phases 1–5 executed; **DEP-01**, **DOC-03** complete (Phase 5).
+**Current focus:** **v1.0 complete.** Next: `/gsd-new-milestone` to plan DOC-01/DOC-02/RUN-01 or other goals.
 
 ## Current Position
 
-Phase: **5** of **5** (dependencies-codebase-map)  
-Plan: **05-01** — **complete** (`05-01-SUMMARY.md`)  
-Status: **Shipped** — [PR #4](https://github.com/aditya-iyer1/contextCLI/pull/4) (`phase-5-dependencies-codebase-map` → `main`)  
+Milestone: **v1.0** — **Architecture reset (Omega)** — **shipped** (2026-03-28)  
+Tag: **`v1.0`**  
 Last activity: 2026-03-28
 
-Progress: [██████████] 100% (all five coarse phases complete)
+Progress: v1.0 roadmap **complete**; requirements stub until next milestone.
 
 ## Performance Metrics
 
-*Updated after plan execution.*
+*Updated after milestone completion.*
 
 **Velocity:** —
 
@@ -49,11 +48,11 @@ Progress: [██████████] 100% (all five coarse phases complete
 
 ### Decisions
 
-Tracked in `PROJECT.md` Key Decisions table.
+See `PROJECT.md` Key Decisions; full v1.0 roadmap archived at `.planning/milestones/v1.0-ROADMAP.md`.
 
 ### Pending Todos
 
-None.
+- Close **DOC-01**, **DOC-02**, **RUN-01** in a future milestone (see `MILESTONES.md` known gaps).
 
 ### Blockers/Concerns
 
@@ -62,5 +61,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-28  
-Stopped at: Phase 5 shipped — **PR #4**  
-Resume: merge PR when ready; `/gsd-complete-milestone` or backlog for DOC-01/DOC-02/RUN-01 per `PROJECT.md`
+Stopped at: **v1.0 milestone archived** — `ROADMAP` / `REQUIREMENTS` collapsed; see `.planning/milestones/`  
+Resume: `/gsd-new-milestone`
