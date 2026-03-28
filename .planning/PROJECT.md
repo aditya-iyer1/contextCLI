@@ -59,7 +59,7 @@
 Signal validation (see `.planning/REQUIREMENTS.md`):
 
 - [x] **SIG-01** — Canonical signal spec locked — [SIGNAL-SPEC-ALPHA-v1.1.md](SIGNAL-SPEC-ALPHA-v1.1.md) (variance, degradation, cliff, formulas; code aligns in later phases).
-- [ ] **SIG-02** — Controlled synthetic dataset with expected degradation.
+- [x] **SIG-02** — Controlled synthetic dataset (`alpha_synthetic`, [DATASET-SIG02.md](DATASET-SIG02.md)); **validated in Phase 7**.
 - [ ] **SIG-03** — API baseline experiment across length bins.
 - [ ] **SIG-04** — Statistical robustness (bootstrap, bin comparisons, resample stability).
 - [ ] **SIG-05** — Transition/cliff rule validation on controlled data.
@@ -109,4 +109,4 @@ This document evolves at milestone boundaries.
 **After v1.0:** Use `/gsd-new-milestone` for requirements and roadmap; keep **DOC-01 / DOC-02 / RUN-01** visible until closed or explicitly deferred.
 
 ---
-*Last updated: 2026-03-27 — SIG-01 signal spec locked (Phase 6 definition)*
+*Last updated: 2026-03-28 — Phase 7 complete (SIG-02 `alpha_synthetic` + prepare path)*

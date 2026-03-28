@@ -6,13 +6,41 @@ import json, random, time
 import numpy as np
 from dataclasses import asdict
 from contextcliff.data.adapters.narrative_qa import NarrativeQAAdapter
+from contextcliff.data.alpha_synthetic_generator import (
+    ALPHA_SIG02_SEED,
+    build_alpha_synthetic_examples,
+)
 
-def balance_samples(n_per_bin: int = 10, buffer_size: int = 2000, dataset_name: str = "narrativeqa"):
+
+def _write_alpha_synthetic_manifest(n_bins: int, n_per_bin: int, seed: int):
+    """Write manifest.json from designed synthetic bins (SIG-02); returns examples."""
+    examples = build_alpha_synthetic_examples(n_bins, n_per_bin, seed)
+    manifest_data = [asdict(example) for example in examples]
+    with open("manifest.json", "w") as f:
+        json.dump(manifest_data, f, indent=4)
+    print(f"Saved {len(examples)} samples to manifest.json (alpha_synthetic)")
+    return examples
+
+
+def balance_samples(
+    n_per_bin: int = 10,
+    buffer_size: int = 2000,
+    dataset_name: str = "narrativeqa",
+    *,
+    n_bins: int = 10,
+):
     """
     Loads and balances the samples in the dataset to ensure each bin has approximately the same number of samples.
     Merges sparse bins if needed (n < 10) to maintain statistical power.
+    For ``alpha_synthetic``, ``n_bins`` is K (designed strata); for ``narrativeqa``, quantile bin count stays 10.
     """
     start_time = time.perf_counter()
+
+    if dataset_name == "alpha_synthetic":
+        examples = _write_alpha_synthetic_manifest(n_bins, n_per_bin, ALPHA_SIG02_SEED)
+        elapsed_time = time.perf_counter() - start_time
+        print(f"Time taken: {elapsed_time:.2f} seconds")
+        return examples
 
     # 1. Initialize Adapter
     if dataset_name == "narrativeqa":
@@ -45,11 +73,11 @@ def balance_samples(n_per_bin: int = 10, buffer_size: int = 2000, dataset_name: 
         print("Not enough examples to quantize. Taking all.")
         selected_examples = examples
     else:
-        # Calculate initial quantile edges
-        n_bins = 10
-        edges = np.quantile(lengths, np.linspace(0, 1, n_bins + 1)) # 11 edges for 10 bins
+        # Calculate initial quantile edges (fixed 10-bin quantiles for narrativeqa)
+        q_bins = 10
+        edges = np.quantile(lengths, np.linspace(0, 1, q_bins + 1))  # 11 edges for 10 bins
         
-        bins = [[] for _ in range(n_bins)]
+        bins = [[] for _ in range(q_bins)]
 
         # Assign to bins
         for example in examples:
@@ -61,7 +89,7 @@ def balance_samples(n_per_bin: int = 10, buffer_size: int = 2000, dataset_name: 
             # If x is smaller than all edges, 0. If larger, len(edges).
             # Let's stick to the previous working logic but robustify.
             idx = np.searchsorted(edges, example.context_tokens, side="right") - 1
-            idx = min(max(0, idx), n_bins - 1)
+            idx = min(max(0, idx), q_bins - 1)
             bins[idx].append(example)
 
         # 4. Merge Sparse Bins (User Requirement: n >= 10 statistical power)
@@ -97,7 +125,7 @@ def balance_samples(n_per_bin: int = 10, buffer_size: int = 2000, dataset_name: 
         # No, user specifically mentioned tail sparsity.
         # Let's stick to the specific instruction: Merge top bin down if sparse.
         
-        for i in range(n_bins - 1, 0, -1): # 9 down to 1
+        for i in range(q_bins - 1, 0, -1): # 9 down to 1
             if len(bins[i]) < MIN_SAMPLES and len(bins[i]) > 0:
                 print(f"Bin {i} is sparse ({len(bins[i])} items). Merging into Bin {i-1}.")
                 bins[i-1].extend(bins[i])
@@ -105,7 +133,7 @@ def balance_samples(n_per_bin: int = 10, buffer_size: int = 2000, dataset_name: 
         
         # Now collect samples
         selected_examples = []
-        for i in range(n_bins):
+        for i in range(q_bins):
             current_bin = bins[i]
             if not current_bin: continue
             

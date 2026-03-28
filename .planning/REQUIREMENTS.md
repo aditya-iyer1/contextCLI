@@ -15,7 +15,7 @@
 
 ### Data & execution
 
-- [ ] **SIG-02**: **One minimal controlled synthetic dataset** is added with **known expected degradation** as context length increases and answer burial / distractor noise increases systematically; ground-truth answers are always defined.
+- [x] **SIG-02**: **One minimal controlled synthetic dataset** is added with **known expected degradation** as context length increases and answer burial / distractor noise increases systematically; ground-truth answers are always defined.
 
 - [ ] **SIG-03**: **One API-based baseline experiment** runs on that dataset across **multiple length bins**, recording per-bin **scores**, per-bin **variance** (or spread), and **failure rates**; execution is API or mock only—no in-repo KV runtime.
 
@@ -70,7 +70,7 @@ If not blocking Alpha validity, leave unchecked and track as backlog.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | SIG-01 | Phase 6 | Locked (definition) |
-| SIG-02 | Phase 7 | Pending |
+| SIG-02 | Phase 7 | Complete |
 | SIG-03 | Phase 8 | Pending |
 | SIG-04 | Phase 9 | Pending |
 | SIG-05 | Phase 10 | Pending |

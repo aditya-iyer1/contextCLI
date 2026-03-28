@@ -61,7 +61,7 @@
 2. Expected degradation direction is documented (what should worsen as length/burial increases).
 3. Data loads through the existing prepare path without new CLI commands.
 
-**Plans:** TBD (`/gsd-plan-phase 7`)
+**Plans:** 1/1 plans complete
 
 **UI hint:** no
 
@@ -178,7 +178,7 @@
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 6. Signal contract | 0/? | **Complete** (PR #5 merged) | 2026-03-28 |
-| 7. Controlled dataset | 0/? | Not started | — |
+| 7. Controlled dataset | 1/1 | **Complete** | 2026-03-28 |
 | 8. Baseline API validation | 0/? | Not started | — |
 | 9. Statistical robustness | 0/? | Not started | — |
 | 10. Transition validation | 0/? | Not started | — |
