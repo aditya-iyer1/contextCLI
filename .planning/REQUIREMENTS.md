@@ -27,10 +27,10 @@ Scope is the **Omega reset** (architecture reset milestone) only—no feature ex
 
 ### Analysis & reporting
 
-- [ ] **ANA-01**: Cliff/report pipeline supports **documented** optional filtering for **compression-active** cases and **short-document suppression** when applicable inputs/metadata exist.
-- [ ] **ANA-02**: Generated reports include **explicit method-fidelity caveats** when conclusions depend on run source (internal vs imported) or method assumptions.
-- [ ] **ANA-03**: Reports include **positional / needle-in-haystack** diagnostics when the stored data and metadata support them.
-- [ ] **ANA-04**: Report text **does not conflate** per-request **latency** with **batched throughput** where both metrics appear; wording makes the distinction clear.
+- [x] **ANA-01**: Cliff/report pipeline supports **documented** optional filtering for **compression-active** cases and **short-document suppression** when applicable inputs/metadata exist.
+- [x] **ANA-02**: Generated reports include **explicit method-fidelity caveats** when conclusions depend on run source (internal vs imported) or method assumptions.
+- [x] **ANA-03**: Reports include **positional / needle-in-haystack** diagnostics when the stored data and metadata support them.
+- [x] **ANA-04**: Report text **does not conflate** per-request **latency** with **batched throughput** where both metrics appear; wording makes the distinction clear.
 
 ### Dependencies
 
@@ -58,10 +58,10 @@ None for this milestone. Deferred work (e.g. richer compare UI, extra datasets) 
 | RUN-01 | Phase 1 | Pending |
 | STA-01 | Phase 2 | Complete |
 | IMP-01 | Phase 3 | Complete |
-| ANA-01 | Phase 4 | Pending |
-| ANA-02 | Phase 4 | Pending |
-| ANA-03 | Phase 4 | Pending |
-| ANA-04 | Phase 4 | Pending |
+| ANA-01 | Phase 4 | Complete |
+| ANA-02 | Phase 4 | Complete |
+| ANA-03 | Phase 4 | Complete |
+| ANA-04 | Phase 4 | Complete |
 | DEP-01 | Phase 5 | Pending |
 | DOC-03 | Phase 5 | Pending |
 
@@ -69,4 +69,4 @@ None for this milestone. Deferred work (e.g. richer compare UI, extra datasets) 
 
 ---
 *Requirements defined: 2026-03-27*  
-*Last updated: 2026-03-28 — IMP-01 satisfied (Phase 3 complete).*
+*Last updated: 2026-03-28 — ANA-01–ANA-04 satisfied (Phase 4 complete).*

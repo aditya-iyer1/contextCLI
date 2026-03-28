@@ -23,6 +23,7 @@ Existing codebase capabilities (see `.planning/codebase/ARCHITECTURE.md`, `STACK
 - ✓ **Data layer** — HF NarrativeQA adapter, NLDA-style quantile sampling (`data/sampler.py`, `data/adapters/narrative_qa.py`).
 - ✓ **Run provenance (STA-01)** — `runs.run_source` / `external_label` / `artifact_ref`, migration + backfill, internal registration in `Runner.run()` (`Phase 2`, 2026-03-28).
 - ✓ **Import bridge (IMP-01)** — `contextcliff import` + JSON `schema_version` 1, `import_external_run`, collision rules vs internal runs, minimal provenance line in cliff report (`Phase 3`, 2026-03-28).
+- ✓ **Analysis & reporting (ANA-01–ANA-04)** — optional `analysis_filters` + manifest join on `profile`, caveats and metrics interpretation in markdown reports (`Phase 4`, 2026-03-28).
 
 ### Active
 
@@ -31,11 +32,7 @@ Architecture reset and harness clarity (this milestone):
 - [ ] **Remove or deprecate misleading KV-runtime story** — docs (and any stray config) that imply in-repo SnapKV / PyramidKV / KVCache-Factory execution or fake `--kv_budget` on API backends; align README/docs with **API-only** execution in this repo.
 - [ ] **Relock runner to engine-agnostic API execution** — single clear path: manifest → `ModelClient.generate` → metrics → SQLite; no mixed “local compression runtime vs API” equivalence claims in code paths.
 - [x] **External artifact import bridge** — satisfied by Phase 3 (`import` CLI + SQLite `imported` rows + report header); further UX belongs in later phases.
-- [ ] **Preserve analysis lessons from the KV study** in analysis/reporting:
-  - Compression-active filtering / short-document suppression where appropriate.
-  - Method-fidelity caveats (what the numbers do and do not imply).
-  - Needle-in-haystack positional diagnostics where relevant.
-  - Correct **latency vs batched-throughput** interpretation in reporting text and any summaries.
+- [x] **Preserve analysis lessons from the KV study** in analysis/reporting — satisfied by Phase 4 (`profile_report.py`, extended `CliffProfiler` reports).
 
 ### Out of Scope
 
