@@ -2,7 +2,7 @@
 
 ## Dependency drift
 
-- **`python-dotenv`** is imported in `src/contextcliff/models/openai_client.py` and `src/contextcliff/data/adapters/narrative_qa.py` but is **not** declared in `pyproject.toml`—fresh installs may fail until added or installed manually.
+- **`python-dotenv`** is imported in `src/contextcliff/models/openai_client.py` and `src/contextcliff/data/adapters/narrative_qa.py` and is **declared** in `pyproject.toml`—`uv sync` installs it with the package.
 - **`pydantic`** is listed in `pyproject.toml` but appears **unused** in the surveyed modules; either adopt it for config validation or remove to reduce noise.
 
 ## Security and secrets

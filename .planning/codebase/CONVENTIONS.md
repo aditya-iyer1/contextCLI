@@ -13,8 +13,8 @@
 
 ## CLI patterns (`src/contextcliff/cli/main.py`)
 
-- **`click`**: Top-level `@click.group()`; subcommands via `@main.command()`
-- **Options:** `@click.option` for flags (`--dataset`, `--bins`, `--manifest`, `--model`)
+- **`click`**: Top-level `@click.group()`; subcommands via `@main.command()` — **`prepare`**, **`run`**, **`import`**, **`profile`**
+- **Options:** `@click.option` for flags (`--dataset`, `--bins`, `--manifest`, `--model`, and import/profile-specific flags)
 - **Errors:** Broad `try/except` with `click.echo` for user-facing messages on `run` and `profile`
 
 ## Logging and user output

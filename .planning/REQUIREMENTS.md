@@ -11,7 +11,7 @@ Scope is the **Omega reset** (architecture reset milestone) only—no feature ex
 
 - [ ] **DOC-01**: Listed design docs (`docs/full_desc.md`, `docs/blueprint.md`, `docs/architecture_preview.md`, `docs/data_layer.md`) do not present in-repo SnapKV, PyramidKV, KVCache-Factory, vLLM `--kv_policy`, or similar **as shipped behavior**; aspirational or historical content is removed or clearly marked **deprecated** with a pointer to the current model (API/mock in-repo; compression via external runs + import).
 - [ ] **DOC-02**: One canonical location (`README.md` or `docs/architecture.md`) states: **in-repo execution is API or `mock` only**; KV-compression and local engine studies are **out-of-repo** and may be merged via the **import** path.
-- [ ] **DOC-03**: After code changes stabilize, `.planning/codebase/*.md` is updated so STACK/ARCHITECTURE/INTEGRATIONS match the reset (no stale KV-runtime narrative).
+- [x] **DOC-03**: After code changes stabilize, `.planning/codebase/*.md` is updated so STACK/ARCHITECTURE/INTEGRATIONS match the reset (no stale KV-runtime narrative).
 
 ### Runner & CLI surface
 
@@ -34,7 +34,7 @@ Scope is the **Omega reset** (architecture reset milestone) only—no feature ex
 
 ### Dependencies
 
-- [ ] **DEP-01**: If `import dotenv` (or equivalent) remains in shipped modules, **`python-dotenv` is declared** in `pyproject.toml` dependencies.
+- [x] **DEP-01**: If `import dotenv` (or equivalent) remains in shipped modules, **`python-dotenv` is declared** in `pyproject.toml` dependencies.
 
 ## v2 Requirements
 
@@ -62,11 +62,11 @@ None for this milestone. Deferred work (e.g. richer compare UI, extra datasets) 
 | ANA-02 | Phase 4 | Complete |
 | ANA-03 | Phase 4 | Complete |
 | ANA-04 | Phase 4 | Complete |
-| DEP-01 | Phase 5 | Pending |
-| DOC-03 | Phase 5 | Pending |
+| DEP-01 | Phase 5 | Complete |
+| DOC-03 | Phase 5 | Complete |
 
 **Coverage:** v1 requirements: **11** | Mapped to phases: **11** | Unmapped: **0**
 
 ---
 *Requirements defined: 2026-03-27*  
-*Last updated: 2026-03-28 — ANA-01–ANA-04 satisfied (Phase 4 complete).*
+*Last updated: 2026-03-28 — DEP-01, DOC-03 satisfied (Phase 5 complete).*

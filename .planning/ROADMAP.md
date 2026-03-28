@@ -10,7 +10,7 @@ Five **coarse** phases follow the **execution order** in `PROJECT.md`: strip mis
 - [x] **Phase 2: Run provenance in SQLite** — Schema/migration for internal vs imported runs (STA-01). *(2026-03-28)*
 - [x] **Phase 3: External import bridge** — CLI + persistence path for labeled imports (IMP-01). *(2026-03-28)*
 - [x] **Phase 4: Analysis & reporting** — Filtering, caveats, positional diagnostics, latency vs throughput (ANA-01–ANA-04). *(2026-03-28)*
-- [ ] **Phase 5: Dependencies & codebase map** — `python-dotenv` declaration if needed; refresh `.planning/codebase/*` (DEP-01, DOC-03).
+- [x] **Phase 5: Dependencies & codebase map** — `python-dotenv` declaration if needed; refresh `.planning/codebase/*` (DEP-01, DOC-03). *(2026-03-28)*
 
 ## Phase Details
 
@@ -117,9 +117,13 @@ Plans:
 1. `pyproject.toml` matches imports used in shipped code.
 2. `.planning/codebase/` documents reflect post-reset architecture and integration story.
 
-**Plans:** TBD
+**Plans:** 1 plan (05-01)
 
 **UI hint:** no
+
+Plans:
+
+- [x] **05-01:** `python-dotenv`, import audit, `.planning/codebase/*` refresh (see `05-01-PLAN.md`).
 
 ---
 
@@ -133,7 +137,7 @@ Plans:
 | 2. Run provenance in SQLite | 1/1 | Complete | 2026-03-28 |
 | 3. External import bridge | 1/1 | Complete | 2026-03-28 |
 | 4. Analysis & reporting | 1/1 | Complete | 2026-03-28 |
-| 5. Dependencies & codebase map | — | Not started | — |
+| 5. Dependencies & codebase map | 1/1 | Complete | 2026-03-28 |
 
 ---
 *Roadmap created: 2026-03-27*

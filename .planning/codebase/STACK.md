@@ -20,13 +20,14 @@ Declared in `pyproject.toml` `[project].dependencies`:
 | Data | `datasets` (HuggingFace), `numpy`, `pandas` |
 | Tokenization | `tiktoken` |
 | LLM API | `openai` |
+| Env / optional `.env` | `python-dotenv` (`load_dotenv` in `openai_client.py`, `narrative_qa.py`) |
 | Viz / reporting | `matplotlib`, `seaborn` |
 | Types / config | `pydantic` (listed; usage in codebase may be minimal—verify before relying on it) |
 | Terminal | `rich` |
 
-## Implicit / environment dependencies
+## Environment
 
-- **`python-dotenv`**: Imported in `src/contextcliff/models/openai_client.py` and `src/contextcliff/data/adapters/narrative_qa.py` (`load_dotenv`) but **not** listed in `pyproject.toml`—install separately or add to dependencies for reproducible installs.
+- **`.env`** (optional): if present, `load_dotenv()` loads `OPENAI_API_KEY` and optional `HF_TOKEN` for the adapters above—no separate undeclared package install.
 
 ## Configuration files
 

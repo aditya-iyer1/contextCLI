@@ -22,9 +22,15 @@
 - **Library:** `tiktoken` (default encoding `o200k_base`, fallback to `cl100k_base` on failure)
 - **Purpose:** `context_tokens` per example for NLDA-style binning in `sampler.py`
 
+## External JSON import (IMP-01)
+
+- **Where:** `contextcliff import` → `import_bridge.artifact_v1.parse_artifact_v1` → SQLite writes via `StateManager` (same `predictions` / `runs` store as internal runs).
+- **Artifact:** Root JSON object must include **`schema_version`: `1`**; row shape and validation rules live in `artifact_v1.py`.
+
 ## Local persistence
 
-- **SQLite:** `src/contextcliff/runner/state.py` — `state.db` stores `runs` / `predictions` (no HTTP; file-based only)
+- **SQLite:** `src/contextcliff/runner/state.py` — `state.db` stores `runs` / `predictions` (no HTTP; file-based only).
+- **`runs`** rows carry **provenance** for internal vs imported experiments: **`run_source`**, **`external_label`**, **`artifact_ref`** (see schema in `state.py`).
 
 ## Not integrated (by design in current code)
 

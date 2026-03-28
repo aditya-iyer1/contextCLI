@@ -24,6 +24,8 @@ Existing codebase capabilities (see `.planning/codebase/ARCHITECTURE.md`, `STACK
 - ✓ **Run provenance (STA-01)** — `runs.run_source` / `external_label` / `artifact_ref`, migration + backfill, internal registration in `Runner.run()` (`Phase 2`, 2026-03-28).
 - ✓ **Import bridge (IMP-01)** — `contextcliff import` + JSON `schema_version` 1, `import_external_run`, collision rules vs internal runs, minimal provenance line in cliff report (`Phase 3`, 2026-03-28).
 - ✓ **Analysis & reporting (ANA-01–ANA-04)** — optional `analysis_filters` + manifest join on `profile`, caveats and metrics interpretation in markdown reports (`Phase 4`, 2026-03-28).
+- ✓ **Declared dependencies (DEP-01)** — `python-dotenv` in `pyproject.toml`; shallow import audit of `src/contextcliff/` vs declared deps (`Phase 5`, 2026-03-28).
+- ✓ **Codebase map (DOC-03)** — `.planning/codebase/*.md` refreshed for import bridge, `profile_report`, provenance (`Phase 5`, 2026-03-28).
 
 ### Active
 
@@ -96,4 +98,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state  
 
 ---
-*Last updated: 2026-03-28 — Phase 3 (IMP-01) validated; Validated / Active updated.*
+*Last updated: 2026-03-28 — Phase 5 (DEP-01, DOC-03) validated; Validated section updated.*
