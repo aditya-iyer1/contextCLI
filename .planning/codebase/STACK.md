@@ -20,19 +20,19 @@ Declared in `pyproject.toml` `[project].dependencies`:
 | Data | `datasets` (HuggingFace), `numpy`, `pandas` |
 | Tokenization | `tiktoken` |
 | LLM API | `openai` |
-| Env / optional `.env` | `python-dotenv` (`load_dotenv` in `openai_client.py`, `narrative_qa.py`) |
+| Env / optional `.env` | `python-dotenv` (`load_dotenv()` only in `cli/main.py` before other imports; default `override=False` does not replace existing env vars) |
 | Viz / reporting | `matplotlib`, `seaborn` |
 | Types / config | `pydantic` (listed; usage in codebase may be minimal—verify before relying on it) |
 | Terminal | `rich` |
 
 ## Environment
 
-- **`.env`** (optional): if present, `load_dotenv()` loads `OPENAI_API_KEY` and optional `HF_TOKEN` for the adapters above—no separate undeclared package install.
+- **`.env`** (optional): when using the **`contextcliff`** CLI, `load_dotenv()` in `cli/main.py` loads `OPENAI_API_KEY` and optional `HF_TOKEN` before adapters run. Library-only imports (no CLI) do not auto-load `.env`.
 
 ## Configuration files
 
 - **`pyproject.toml`**: Project metadata, dependencies, entry point
-- **`.env`**: Expected for `OPENAI_API_KEY` (`openai_client.py`) and optional `HF_TOKEN` (`narrative_qa.py`)
+- **`.env`**: Expected for `OPENAI_API_KEY` and optional `HF_TOKEN` when running via CLI (`cli/main.py` loads it); set env vars yourself for non-CLI use
 
 ## Generated / local artifacts (not source)
 

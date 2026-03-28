@@ -4,7 +4,7 @@
 
 - **Where:** `src/contextcliff/models/openai_client.py`
 - **Client:** Official `openai` Python SDK (`OpenAI` class)
-- **Auth:** `OPENAI_API_KEY` via environment (loaded with `dotenv` if present)
+- **Auth:** `OPENAI_API_KEY` via environment (when using the **`contextcliff`** CLI, optional `.env` is loaded first in `cli/main.py`; default `override=False`)
 - **Usage:** `chat.completions.create` with `messages=[{"role": "user", "content": prompt}]`, `temperature=0.0`
 - **Retries:** Up to 3 attempts with exponential backoff on failure
 - **Cost:** Heuristic pricing table `PRICING` for `gpt-4o`, `gpt-4-turbo`, `gpt-3.5-turbo`; `cost_estimate()` used by `Runner.check_cost()` before a run
@@ -13,7 +13,7 @@
 
 - **Where:** `src/contextcliff/data/adapters/narrative_qa.py`
 - **API:** `datasets.load_dataset("narrativeqa", streaming=True, split="test", ...)`
-- **Auth:** Optional `HF_TOKEN` env for gated/private access
+- **Auth:** Optional `HF_TOKEN` env for gated/private access (set in shell or `.env` via CLI `load_dotenv` as above)
 - **Flags:** `trust_remote_code=True` on load
 
 ## Tokenization (length estimation)
