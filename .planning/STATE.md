@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: Signal validation (Alpha)
-status: phase 6 SIG-01 spec locked
-stopped_at: null
-last_updated: "2026-03-27T12:00:00.000Z"
-last_activity: 2026-03-27
+milestone: v1.0
+milestone_name: gaps
+status: "SIG-01 canonical spec locked — next: Phase 7 dataset (or `/gsd-plan-phase 6` for implementation tasks only)"
+stopped_at: Phase 6 context gathered
+last_updated: "2026-03-28T05:45:41.850Z"
+last_activity: 2026-03-27 — [SIGNAL-SPEC-ALPHA-v1.1.md](SIGNAL-SPEC-ALPHA-v1.1.md) locked (L1–L3)
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
-  percent: 0
 ---
 
 # Project State
@@ -59,6 +58,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-27  
-Stopped at: **Milestone v1.1 initialized** — requirements and roadmap in flight  
+Last session: 2026-03-28T05:45:41.835Z
+Stopped at: Phase 6 context gathered
 Resume: `/gsd-discuss-phase 6` or `/gsd-plan-phase 6`
