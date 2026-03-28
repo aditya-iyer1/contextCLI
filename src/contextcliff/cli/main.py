@@ -12,7 +12,17 @@ import time
 import click
 
 from contextcliff.analysis.binning import ResultBinner
-from contextcliff.analysis.cliff import CliffProfiler
+from contextcliff.analysis.cliff import CliffProfiler, ReportExtras
+from contextcliff.analysis.profile_report import (
+    apply_prediction_filters,
+    build_caveats_section,
+    build_metrics_interpretation_note,
+    build_positional_section,
+    effective_filters,
+    load_manifest_df,
+    parse_run_config,
+    validate_token_bounds,
+)
 from contextcliff.data.sampler import balance_samples
 from contextcliff.import_bridge.artifact_v1 import parse_artifact_v1
 from contextcliff.runner.engine import Runner
@@ -96,25 +106,87 @@ def import_cmd(artifact, run_id, label, artifact_ref, db_path, replace):
 @main.command()
 @click.argument("run_id")
 @click.option("--db", default="state.db", help="SQLite database path.")
-def profile(run_id, db):
-    """Analyze SQLite results for a run_id and write a markdown cliff report."""
+@click.option(
+    "--manifest",
+    default=None,
+    type=click.Path(exists=True, dir_okay=False, path_type=str),
+    help="Optional manifest.json for per-example metadata (filters, positional diagnostics). See docs/architecture.md.",
+)
+@click.option(
+    "--min-prompt-tokens",
+    default=None,
+    type=int,
+    help="Override/analysis: minimum prompt_tokens per row before binning (inclusive; overrides runs.config; must be <= max if both set).",
+)
+@click.option(
+    "--max-prompt-tokens",
+    default=None,
+    type=int,
+    help="Override/analysis: maximum prompt_tokens per row before binning (inclusive; overrides runs.config; must be >= min if both set).",
+)
+def profile(run_id, db, manifest, min_prompt_tokens, max_prompt_tokens):
+    """Analyze SQLite results for a run_id and write a markdown cliff report.
+
+    Optional filters and --manifest are documented in docs/architecture.md.
+    """
     click.echo(f"Profiling results for run: {run_id}")
 
     binner = ResultBinner(db)
     try:
+        state = StateManager(db)
+        prov = state.get_run_provenance(run_id)
+        cfg_raw = prov.get("config") if prov else None
+        run_config, cfg_warnings = parse_run_config(cfg_raw if isinstance(cfg_raw, str) else None)
+        filters = effective_filters(run_config, min_prompt_tokens, max_prompt_tokens)
+        bound_err = validate_token_bounds(filters)
+        if bound_err:
+            click.echo(bound_err, err=True)
+            sys.exit(2)
+
+        manifest_df = None
+        if manifest:
+            manifest_df = load_manifest_df(manifest)
+
         raw_df = binner.load_run_data(run_id)
         if raw_df.empty:
             click.echo("No data found for this run ID.")
             return
 
-        bins_df = binner.bin_results(raw_df)
+        filtered_df, filter_warn = apply_prediction_filters(raw_df, filters, manifest_df)
+        filter_warnings = list(cfg_warnings) + list(filter_warn)
+
+        if filtered_df.empty:
+            click.echo("No prediction rows remain after filters.", err=True)
+            sys.exit(2)
+
+        bins_df = binner.bin_results(filtered_df)
+        if bins_df.empty:
+            click.echo(
+                "No length bins could be computed from the filtered rows (insufficient data for binning).",
+                err=True,
+            )
+            sys.exit(2)
 
         profiler = CliffProfiler()
         cliff_data = profiler.detect_cliff(bins_df)
 
-        state = StateManager(db)
-        prov = state.get_run_provenance(run_id)
-        report = profiler.generate_markdown_report(run_id, bins_df, cliff_data, provenance=prov)
+        caveats = build_caveats_section(prov or {}, run_config)
+        metrics_md = build_metrics_interpretation_note(prov or {}, run_config, filters)
+        positional_md = build_positional_section(filtered_df, manifest_df)
+
+        extras = ReportExtras(
+            filter_warnings=filter_warnings,
+            caveats_markdown=caveats,
+            metrics_interpretation_markdown=metrics_md,
+            positional_markdown=positional_md,
+        )
+        report = profiler.generate_markdown_report(
+            run_id,
+            bins_df,
+            cliff_data,
+            provenance=prov,
+            extras=extras,
+        )
 
         report_path = f"report_{run_id}.md"
         with open(report_path, "w") as f:

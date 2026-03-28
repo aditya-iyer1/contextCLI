@@ -1,6 +1,18 @@
 
 import pandas as pd
-from typing import Dict, Any, Optional
+from dataclasses import dataclass, field
+from typing import Dict, Any, Optional, List
+
+
+@dataclass
+class ReportExtras:
+    """Optional sections for ``generate_markdown_report`` (Phase 4 — ANA-01–ANA-04)."""
+
+    filter_warnings: List[str] = field(default_factory=list)
+    caveats_markdown: Optional[str] = None
+    metrics_interpretation_markdown: str = ""
+    positional_markdown: Optional[str] = None
+
 
 class CliffProfiler:
     """Identifies the 'Cliff' and Safe Operating Cap."""
@@ -82,20 +94,47 @@ class CliffProfiler:
         bins_df: pd.DataFrame,
         cliff_data: Dict[str, Any],
         provenance: Optional[Dict[str, Any]] = None,
+        extras: Optional[ReportExtras] = None,
     ) -> str:
-        """Generates the markdown table and summary."""
+        """Generates the markdown table and summary.
+
+        Section order: Provenance → Analysis warnings → Executive Summary (incl. metrics
+        interpretation) → Performance by Length Bin → Positional diagnostics → Caveats.
+        """
         
         md = f"# ContextCliff Report: Run {run_id}\n\n"
+        if bins_df.empty:
+            md += (
+                "_No length bins could be computed (empty input after filtering). "
+                "This should not normally appear; use stricter filters or more rows._\n"
+            )
+            return md
         if provenance:
             rs = provenance.get("run_source")
             el = provenance.get("external_label")
-            if rs is not None or el is not None:
-                rs_s = str(rs) if rs is not None else ""
-                el_s = str(el).replace("\n", " ").replace("`", "'") if el is not None else ""
-                md += f"**Provenance:** run_source=`{rs_s}` · external_label=`{el_s}`\n\n"
+            ar = provenance.get("artifact_ref")
+            parts = []
+            if rs is not None:
+                parts.append(f"run_source=`{str(rs)}`")
+            if el is not None:
+                el_s = str(el).replace("\n", " ").replace("`", "'")
+                parts.append(f"external_label=`{el_s}`")
+            if ar is not None and str(ar).strip():
+                ar_s = str(ar).replace("\n", " ").replace("`", "'")
+                parts.append(f"artifact_ref=`{ar_s}`")
+            if parts:
+                md += "**Provenance:** " + " · ".join(parts) + "\n\n"
 
-        # Summary
+        if extras and extras.filter_warnings:
+            md += "## Analysis warnings\n\n"
+            for w in extras.filter_warnings:
+                md += f"- {w}\n"
+            md += "\n"
+
         md += "## Executive Summary\n"
+        if extras and extras.metrics_interpretation_markdown.strip():
+            md += "### Metrics interpretation\n\n"
+            md += extras.metrics_interpretation_markdown.strip() + "\n\n"
         md += f"- **Safe Operating Cap**: {int(cliff_data['safe_cap_tokens'])} tokens\n"
         md += f"- **Baseline Performance**: F1={cliff_data['baseline_mean']:.3f} (approx)\n"
         if 'cliff_reason' in cliff_data:
@@ -111,5 +150,12 @@ class CliffProfiler:
         for _, row in bins_df.iterrows():
             range_str = f"{int(row['min_tokens'])}-{int(row['max_tokens'])}"
             md += f"| {range_str} | {int(row['sample_count'])} | {row['mean_f1']:.3f} | {row['std_f1']:.3f} | {row['failure_rate']:.1%} |\n"
+
+        if extras and extras.positional_markdown:
+            md += "\n" + extras.positional_markdown.rstrip() + "\n"
+
+        if extras and extras.caveats_markdown:
+            md += "\n## Caveats\n\n"
+            md += extras.caveats_markdown.strip() + "\n"
             
         return md
