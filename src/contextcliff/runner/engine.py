@@ -1,9 +1,15 @@
+"""Evaluation runner: loads manifest examples and invokes a ``ModelClient``.
 
+Supported clients are the OpenAI HTTP API (``OpenAIClient``) and ``MockClient`` for
+dry runs. This layer does not implement local key-value cache compression, vLLM-style
+engines, or compression budget flags.
+"""
+
+import json
 import logging
 import time
-import json
-from typing import List, Optional
 from dataclasses import asdict
+from typing import List, Optional
 
 from contextcliff.data.formats import Example, Prediction, EvalRecord
 from contextcliff.models.client import ModelClient
@@ -35,8 +41,12 @@ class MockClient(ModelClient):
         return 0.0
 
 class Runner:
-    """Orchestrates the evaluation process."""
-    
+    """Load ``manifest.json``, run generation via API or ``mock``, write predictions to SQLite.
+
+    No compression hooks or alternate local runtimes—only ``ModelClient`` backends
+    selected in ``__init__``.
+    """
+
     def __init__(self, manifest_path: str, model_name: str, run_id: str, db_path: str = "state.db"):
         self.manifest_path = manifest_path
         self.model_name = model_name

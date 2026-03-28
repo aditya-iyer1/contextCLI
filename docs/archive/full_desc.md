@@ -163,7 +163,7 @@ The Persistence layer is also where we implement the Engine Toggle for KV cache 
 
 In summary, while “persistence” might not be visible to the user, it underpins reliability and repeatability. The CLI leverages it to restart gracefully after interruptions and to avoid redundant computations – a crucial feature for long evaluations. Moreover, by having all results logged, users or researchers can later query the database directly to do their own analysis or verify specific cases (e.g., “what was the model’s answer on example X in bin 9?”).
 
-Analysis Layer
+## Analysis Layer
 
 Once the model has been run on all examples and the results are stored, the Analysis Layer takes over to derive insights: computing metrics, identifying the cliff, and preparing outputs for the user.
 
@@ -212,11 +212,11 @@ Summary of Layer Responsibilities:
 
 By structuring it this way, each part can be developed and tested in isolation (e.g., we can unit test the cliff detection logic with synthetic data, or test the sampler on a dummy distribution). It also makes it easier to later plug in new features, such as adding a new metric or an additional analysis (like attention entropy analysis as suggested in the blueprint ￼). The user interacts with this pipeline via a simple CLI, which we will outline in the Implementation Roadmap.
 
-KV Cache Impact Study
+# KV Cache Impact Study
 
 One of the advanced features of ContextCliff is the ability to evaluate how KV cache compression policies affect a model’s effective context length and performance. This is treated as a standalone module integrated into the CLI – effectively a “Phase 2” after building the baseline CLI. In this section, we explain how the KV cache impact study is set up and what it analyzes.
 
-Integration of KV Compression in ContextCliff
+## Integration of KV Compression in ContextCliff
 
 Typically, when using an API or standard model, we have no control over the model’s key-value (KV) cache – the internal memory of keys and values for each transformer layer that grows with the number of tokens processed. To experiment with KV compression (techniques to reduce memory usage and speed up inference for long contexts), we need to run models locally or in a custom environment. ContextCliff addresses this by introducing a local engine mode using frameworks like vLLM or SGLang, which support customization of the decoding process.
 
@@ -273,7 +273,7 @@ In conclusion, the KV Cache Impact Study enhances ContextCliff by not just ident
 
 All these findings will be clearly reported with tables and explanations as part of the comprehensive output when KV policies are tested.
 
-Implementation Roadmap
+# Implementation Roadmap
 
 Building ContextCliff involves two major phases: first, the core CLI for baseline evaluation (NLDA, data through analysis without KV compression), and second, the KV compression testbed integrated into the workflow. Below is the roadmap outlining how to develop and assemble these components, along with the Minimal Viable Experiments (MVE) to validate each stage:
 

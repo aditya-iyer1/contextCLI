@@ -207,11 +207,15 @@ The presentation layer contains the logic to write out the metrics, cliffs, and 
    - Engineers need an operational constraint, rather than statistical abstraction
    - Binning implemented in the `parser`, conversion back to tokens implemented in before the final reporting stage
 2. **Network Retry vs Generation Fail**: Handle Transport errors via Backoff, treat empty/malformed/refusal outputs as terminal failures
-   - **Rationale**: Transport errors (500s/timeouts) are noise; generation errors (broken JSON/refusals) are the **signal**. Retrying "I cannot help with that" hides the cliff-edge instability we aim to measure
-   - **Supporting Info**: Long-context calls (100k+) are high-latency/high-cost; crashing on a timeout is a resource waste. "Context Rot" logic dictates model refusal is a valid data point for the "Degraded Region".
+   - **Rationale**: Transport errors (500s/timeouts) are noise; generation errors (broken JSON/refusals) are the **signal**. Retrying "I cannot help with that" hides the cliff-edge instability we aim to measure. Models often stress-test before they collapse.
+   - **Supporting Info**: Long-context calls (100k+) are high-latency/high-cost; crashing on a timeout is a resource waste. "Context Rot" logic dictates model refusal is a valid data point for the "Degraded Region". "Context Rot" notes that models become non-deterministic or refuse tasks as they approach context limits. Treating these as terminal records (not retries) is the only way to preserve this signal.
    - **Implementation**:
-     - **Transport**: `models/base.py` implements a decorator for HTTP 500/429/RequestTimeout
-     - **Logic**: `models/openai.py` (or vLLM) returns a `null` or `Failure` object on parse errors.
+     - **Transport**: `models/base.py` implements a decorator for HTTP 500/429/RequestTimeout. Data capture during inference.
+     - **Logic**:
+       - `models/openai.py` (or vLLM) returns a `null` or `Failure` object on parse errors. Add `raw_metadata` and `error_category` fields to the `Prediction` object.
+       - If `TransportError` (e.g. Timeout) -> `models/base.py` retries.
+         - If `success` but `refusal_regex` matches -> Tag as `refusal`, store in SQLite, move to next sample
+         - If `success` but `JSON_parse_error` -> Tag as `malformed`, store in SQLite, move to next
      - **Persistence**: `runner/state.py` (SQLite) stores `prompt_hash` + `model_output` immediately after succesful transport to prevent redundant spending.
 3. **SQuAD-style Normalized Token-F1**: Use bag-of-words overlap (P/R) for generative QA tasks.
    - **Rationale**: Exact-Match (EM) is too brittle for narrativeQA; it provides binary signal that masks the "gradient of degradation". F1 captures the model's gradual loss of coherence.
